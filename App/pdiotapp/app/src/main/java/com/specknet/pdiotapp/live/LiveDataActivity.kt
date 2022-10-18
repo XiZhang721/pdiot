@@ -1,9 +1,7 @@
 package com.specknet.pdiotapp.live
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
+import android.content.res.Resources
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -20,6 +18,7 @@ import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.RESpeckLiveData
 import com.specknet.pdiotapp.utils.ThingyLiveData
+import kotlinx.android.synthetic.main.activity_live_data.*
 import kotlin.collections.ArrayList
 
 
@@ -247,6 +246,15 @@ class LiveDataActivity : AppCompatActivity() {
         }
 
 
+    }
+
+    fun updateText(sensor:String,movement:String){
+        val textMessage:String = String.format(R.string.movement_text.toString(),sensor,movement)
+        if(sensor.equals(R.string.respeck_string)){
+            respeck_text.text = textMessage;
+        }else{
+            thingy_text.text = textMessage;
+        }
     }
 
 

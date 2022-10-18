@@ -26,6 +26,12 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"/>
 
+        <TextView
+            android:id="@+id/respeck_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Based on your Respeck data, your current possible movement is: "/>
+
     </LinearLayout>
 
     <LinearLayout
@@ -47,7 +53,11 @@
             android:id="@+id/thingy_chart"
             android:layout_width="match_parent"
             android:layout_height="200dp"/>
-
+        <TextView
+            android:id="@+id/thingy_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Based on your Thingy data, your current possible movement is: "/>
 
     </LinearLayout>
 
