@@ -37,7 +37,6 @@ class LiveDataActivity : AppCompatActivity() {
     lateinit var allRespeckData: LineData
 
     lateinit var allThingyData: LineData
-
     lateinit var respeckChart: LineChart
     lateinit var thingyChart: LineChart
 
@@ -54,6 +53,10 @@ class LiveDataActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_live_data)
 
+        //used for testing
+        //var testInput: ArrayList<Float> = arrayListOf<Float>(0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,1f);
+        //var res:String = chooseBest(testInput);
+        //updateText("Respeck",res);
         setupCharts()
 
         // set up the broadcast receiver
@@ -121,6 +124,7 @@ class LiveDataActivity : AppCompatActivity() {
         looperThingy = handlerThreadThingy.looper
         val handlerThingy = Handler(looperThingy)
         this.registerReceiver(thingyLiveUpdateReceiver, filterTestThingy, null, handlerThingy)
+
 
     }
 
@@ -248,13 +252,28 @@ class LiveDataActivity : AppCompatActivity() {
 
     }
 
-    fun updateText(sensor:String,movement:String){
-        val textMessage:String = String.format(R.string.movement_text.toString(),sensor,movement)
-        if(sensor.equals(R.string.respeck_string)){
+    //do updateText("Respeck" or "Tringy", chooseBest(The result of model in array list of float))
+    private fun updateText(sensor:String, movement:String){
+        val textMessage:String = String.format(resources.getString(R.string.movement_text),sensor,movement)
+        if(sensor.equals(resources.getString(R.string.respeck_string))){
             respeck_text.text = textMessage;
         }else{
             thingy_text.text = textMessage;
         }
+    }
+
+    fun chooseBest(arr: ArrayList<Float>):String{
+        var currentVal:Float = 0F;
+        var currentIndex:Int = 0;
+        var index:Int = 0;
+        for(i in arr){
+            if(i>currentVal){
+                currentVal = i;
+                currentIndex = index;
+            }
+            index++;
+        }
+        return  resources.getStringArray(R.array.activity_follow_model_order)[currentIndex];
     }
 
 

@@ -54,5 +54,5 @@
     <string name="thingy_mag">Mag = (%1$.3f, %2$.3f, %3$.3f)</string>
     <string name="respeck_string">Respeck</string>
     <string name="thingy_string">Thingy</string>
-    <string name="movement_text">Based on your %1$s data, your current possible movement is: %2$s</string>
+    <string name="movement_text">Based on your %1$s data, your are %2$s</string>
 </resources>
