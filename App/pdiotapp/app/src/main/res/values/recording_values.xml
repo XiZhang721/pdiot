@@ -27,20 +27,20 @@
     </string-array>
 
     <string-array name="activity_follow_model_order">
-        <item>doing desk work</item>
-        <item>walking at normal speed</item>
-        <item>climbing stairs</item>
-        <item>descending stairs</item>
-        <item>sitting</item>
-        <item>sitting bent forward</item>
-        <item>sitting bent backward</item>
-        <item>standing</item>
-        <item>sunning</item>
-        <item>lying down left</item>
-        <item>lying down right</item>
-        <item>lying down on back</item>
-        <item>lying down on stomach</item>
-        <item>doing general Movement</item>
+        <item>doing desk work.</item>
+        <item>walking at normal speed.</item>
+        <item>climbing stairs.</item>
+        <item>descending stairs.</item>
+        <item>sitting.</item>
+        <item>sitting bent forward.</item>
+        <item>sitting bent backward.</item>
+        <item>standing.</item>
+        <item>running.</item>
+        <item>lying down left.</item>
+        <item>lying down right.</item>
+        <item>lying down on back.</item>
+        <item>lying down on stomach.</item>
+        <item>doing general movement.</item>
     </string-array>
 
 </resources>
