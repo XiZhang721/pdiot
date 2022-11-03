@@ -52,4 +52,8 @@
     <color name="cyan_50">#E0F7FA</color>
     <color name="amber_50">#FFF8E1</color>
     <color name="purple_50">#F3E5F5</color>
+    <color name="main_bg">#EAECF1</color>
+    <color name="button_icon_bg">#D4D3CA</color>
+    <color name="button_icon_light">#5C4F55</color>
+    <color name="button_icon_dark">#B13B2E</color>
 </resources>

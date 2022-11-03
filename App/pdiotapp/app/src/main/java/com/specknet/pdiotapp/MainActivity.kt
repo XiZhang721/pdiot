@@ -14,16 +14,22 @@ import android.view.MenuItem
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
 import com.specknet.pdiotapp.bluetooth.ConnectingActivity
 import com.specknet.pdiotapp.live.LiveDataActivity
 import com.specknet.pdiotapp.onboarding.OnBoardingActivity
 import com.specknet.pdiotapp.utils.Constants
+import com.specknet.pdiotapp.RecyclerAdapter
 import com.specknet.pdiotapp.utils.Utils
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    private var layoutManager: RecyclerView.LayoutManager ?= null
+    private var adapter: RecyclerView.Adapter<RecyclerAdapter.ViewHolder> ?= null
 
     // buttons and textviews
     lateinit var liveProcessingButton: Button
@@ -60,6 +66,11 @@ class MainActivity : AppCompatActivity() {
             val introIntent = Intent(this, OnBoardingActivity::class.java)
             startActivity(introIntent)
         }
+        layoutManager = LinearLayoutManager(this)
+        recycleView.layoutManager = layoutManager
+        adapter = RecyclerAdapter(this)
+        recycleView.adapter = adapter
+
 
         liveProcessingButton = findViewById(R.id.live_button)
         pairingButton = findViewById(R.id.ble_button)
@@ -79,16 +90,12 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun setupClickListeners() {
+    private fun setupClickListeners() {
         liveProcessingButton.setOnClickListener {
             val intent = Intent(this, LiveDataActivity::class.java)
             startActivity(intent)
         }
 
-        pairingButton.setOnClickListener {
-            val intent = Intent(this, ConnectingActivity::class.java)
-            startActivity(intent)
-        }
 
         recordButton.setOnClickListener {
             val intent = Intent(this, RecordingActivity::class.java)
@@ -96,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun setupPermissions() {
+    private fun setupPermissions() {
         // request permissions
 
         // location permission
@@ -151,7 +158,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun setupBluetoothService() {
+    private fun setupBluetoothService() {
         val isServiceRunning = Utils.isServiceRunning(BluetoothSpeckService::class.java, applicationContext)
         Log.i("debug","isServiceRunning = " + isServiceRunning)
 
