@@ -18,10 +18,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.specknet.pdiotapp.MainActivity
 import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.RecordingActivity
+import com.specknet.pdiotapp.ml.RespeckModel
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.RESpeckLiveData
 import com.specknet.pdiotapp.utils.ThingyLiveData
 import kotlinx.android.synthetic.main.activity_live_data.*
+import org.tensorflow.lite.DataType
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
+import java.nio.FloatBuffer
 import kotlin.collections.ArrayList
 
 
@@ -51,11 +55,20 @@ class LiveDataActivity : AppCompatActivity() {
 
     val filterTestRespeck = IntentFilter(Constants.ACTION_RESPECK_LIVE_BROADCAST)
     val filterTestThingy = IntentFilter(Constants.ACTION_THINGY_BROADCAST)
+    lateinit var respeckModel:RespeckModel
+    lateinit var respeckInputWindow:FloatBuffer
+    lateinit var respeckMovment:String
+    lateinit var thingyMovment:String
+    var respeckNeedUpdate:Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_live_data)
-
+        respeckModel = RespeckModel.newInstance(this)
+        var respeckCounter =0
+        respeckMovment = resources.getStringArray(R.array.activity_follow_model_order)[13]
+        respeckNeedUpdate = true
+        respeckInputWindow = FloatBuffer.allocate(500);
         //used for testing
         //var testInput: ArrayList<Float> = arrayListOf<Float>(0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,1f);
         //var res:String = chooseBest(testInput);
@@ -98,12 +111,34 @@ class LiveDataActivity : AppCompatActivity() {
                     Log.d("Live", "onReceive: liveData = " + liveData)
 
                     // get all relevant intent contents
-                    val x = liveData.accelX
-                    val y = liveData.accelY
-                    val z = liveData.accelZ
+                    val accelX = liveData.accelX
+                    val accelY = liveData.accelY
+                    val accelZ = liveData.accelZ
+                    var gyroX = liveData.gyro.x
+                    var gyroY = liveData.gyro.y
+                    var gyroZ = liveData.gyro.z
+                    var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ)
+                    respeckInputWindow.put(fA)
+                    if(respeckCounter >= 50){
+                        var rArray:FloatArray = respeckInputWindow.array().sliceArray(IntRange(0,299))
+
+                        println("size: aaa  "+rArray.size)
+                        val input = TensorBuffer.createFixedSize(intArrayOf(1, 50, 6), DataType.FLOAT32)
+                        input.loadArray(rArray)
+                        val outputs = respeckModel.process(input)
+                        val output = outputs.outputFeature0AsTensorBuffer.floatArray
+                        var tempRespeckMovment = chooseBest(output)
+                        runOnUiThread{
+                            val textMessage:String = String.format(resources.getString(R.string.movement_text),"Respack",tempRespeckMovment)
+                            respeck_text.text = textMessage}
+                        respeckCounter = 0
+                        respeckInputWindow.clear()
+
+                    }
+                    respeckCounter+=1
 
                     time += 1
-                    updateGraph("respeck", x, y, z)
+                    updateGraph("respeck", accelX, accelY, accelZ)
 
                 }
             }
@@ -272,12 +307,10 @@ class LiveDataActivity : AppCompatActivity() {
                 thingyChart.moveViewToX(thingyChart.lowestVisibleX + 40)
             }
         }
-
-
     }
 
     //do updateText("Respeck" or "Tringy", chooseBest(The result of model in array list of float))
-    private fun updateText(sensor:String, movement:String){
+    fun updateText(sensor:String, movement:String){
         val textMessage:String = String.format(resources.getString(R.string.movement_text),sensor,movement)
         if(sensor.equals(resources.getString(R.string.respeck_string))){
             respeck_text.text = textMessage;
@@ -286,23 +319,15 @@ class LiveDataActivity : AppCompatActivity() {
         }
     }
 
-    fun chooseBest(arr: ArrayList<Float>):String{
-        var currentVal:Float = 0F;
-        var currentIndex:Int = 0;
-        var index:Int = 0;
-        for(i in arr){
-            if(i>currentVal){
-                currentVal = i;
-                currentIndex = index;
-            }
-            index++;
-        }
-        return  resources.getStringArray(R.array.activity_follow_model_order)[currentIndex];
-    }
+    fun chooseBest(arr: FloatArray):String{
 
+        var x = arr.indexOf(arr.max()!!)  // change name x to index
+        return resources.getStringArray(R.array.activity_follow_model_order)[x];
+    }
 
     override fun onDestroy() {
         super.onDestroy()
+        respeckModel.close()
         unregisterReceiver(respeckLiveUpdateReceiver)
         unregisterReceiver(thingyLiveUpdateReceiver)
         looperRespeck.quit()
