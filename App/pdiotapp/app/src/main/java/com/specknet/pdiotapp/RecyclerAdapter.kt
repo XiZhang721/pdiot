@@ -27,7 +27,7 @@ class RecyclerAdapter(var mContext: Context): RecyclerView.Adapter<RecyclerAdapt
     private var failConnect = "Not Connected"
     private var buttonTextConn = "Connect"
     private var buttonTextReConn = "Re-Connect"
-    private var images = intArrayOf(R.drawable.thingy_image,R.drawable.thingy_image)
+    private var images = intArrayOf(R.drawable.respeck_image,R.drawable.thingy_image)
 
 
     var thingyOn = false
@@ -93,16 +93,11 @@ class RecyclerAdapter(var mContext: Context): RecyclerView.Adapter<RecyclerAdapt
             holder.connButton.setText(buttonTextConn)
         }
 
-        if(position == 0)
-            holder.connButton.setOnClickListener {
-                val intent = Intent(mContext, ConnectingActivity::class.java)
-                mContext.startActivity(intent)
-        }else {
-            holder.connButton.setOnClickListener {
-                val intent = Intent(mContext, ConnectingActivity::class.java)
-                mContext.startActivity(intent)
-            }
+        holder.connButton.setOnClickListener {
+            val intent = Intent(mContext, ConnectingActivity::class.java)
+            mContext.startActivity(intent)
         }
+
     }
 
 
