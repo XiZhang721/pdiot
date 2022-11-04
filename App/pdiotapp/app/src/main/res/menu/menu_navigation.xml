@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/connection"
+        android:title="Connect"
+        android:icon="@mipmap/conn_dark"/>
+    <item
+        android:id="@+id/live"
+        android:title="Watch Live"
+        android:icon="@mipmap/live_dark"/>
+    <item
+        android:id="@+id/record"
+        android:title="Record Data"
+        android:icon="@mipmap/record_dark"/>
+</menu>

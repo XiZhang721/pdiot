@@ -12,6 +12,8 @@ import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.specknet.pdiotapp.live.LiveDataActivity
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.CountUpTimer
 import com.specknet.pdiotapp.utils.RESpeckLiveData
@@ -69,6 +71,7 @@ class RecordingActivity : AppCompatActivity() {
         Log.d(TAG, "onCreate: here")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recording)
+
 
         respeckOutputData = StringBuilder()
         thingyOutputData = StringBuilder()
@@ -148,7 +151,28 @@ class RecordingActivity : AppCompatActivity() {
                 timer.text = "Time elapsed: " + dateFormatted
             }
         }
-
+        var bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+        bottomNavigationView.selectedItemId = R.id.record
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId){
+                R.id.connection ->{
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(0,0)
+                    true
+                }
+                R.id.live->{
+                    val intent = Intent(this, LiveDataActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(0,0)
+                    true
+                }
+                R.id.record->{
+                    true
+                }
+            }
+            false
+        }
     }
 
     private fun setupViews() {

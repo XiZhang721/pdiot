@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
 import com.specknet.pdiotapp.bluetooth.ConnectingActivity
@@ -30,7 +31,6 @@ class MainActivity : AppCompatActivity() {
 
     private var layoutManager: RecyclerView.LayoutManager ?= null
     private var adapter: RecyclerView.Adapter<RecyclerAdapter.ViewHolder> ?= null
-
     // buttons and textviews
     lateinit var liveProcessingButton: Button
     lateinit var pairingButton: Button
@@ -70,15 +70,36 @@ class MainActivity : AppCompatActivity() {
         recycleView.layoutManager = layoutManager
         adapter = RecyclerAdapter(this)
         recycleView.adapter = adapter
+        var bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
+        bottomNavigationView.selectedItemId = R.id.connection
+        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId){
+                R.id.connection ->{
+                    true
+                }
+                R.id.live->{
+                    val intent = Intent(this, LiveDataActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(0,0)
+                    true
+                }
+                R.id.record->{
+                    val intent = Intent(this, RecordingActivity::class.java)
+                    startActivity(intent)
+                    overridePendingTransition(0,0)
+                    true
+                }
+            }
+            false
+        }
 
-
-        liveProcessingButton = findViewById(R.id.live_button)
-        pairingButton = findViewById(R.id.ble_button)
-        recordButton = findViewById(R.id.record_button)
+//        liveProcessingButton = findViewById(R.id.live_button)
+//        pairingButton = findViewById(R.id.ble_button)
+//        recordButton = findViewById(R.id.record_button)
 
         permissionAlertDialog = AlertDialog.Builder(this)
 
-        setupClickListeners()
+        //setupClickListeners()
 
         setupPermissions()
 

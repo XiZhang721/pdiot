@@ -7,61 +7,73 @@
     tools:context=".live.LiveDataActivity">
 
     <LinearLayout
+        android:id="@+id/respeck_graphs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:id="@+id/respeck_graphs"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/thingy_graphs"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/thingy_graphs">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Respeck Live Data"/>
+            android:text="Respeck Live Data" />
 
         <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/respeck_chart"
             android:layout_width="match_parent"
-            android:layout_height="200dp"/>
+            android:layout_height="200dp" />
 
         <TextView
             android:id="@+id/respeck_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Based on your Respeck data, your current possible movement is: "/>
+            android:text="Based on your Respeck data, your current possible movement is: " />
 
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/thingy_graphs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/respeck_graphs"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
-        android:id="@+id/thingy_graphs"
-        android:orientation="vertical">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/respeck_graphs">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Thingy Live Data"/>
+            android:text="Thingy Live Data" />
 
         <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/thingy_chart"
             android:layout_width="match_parent"
-            android:layout_height="200dp"/>
+            android:layout_height="200dp" />
+
         <TextView
             android:id="@+id/thingy_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Based on your Thingy data, your current possible movement is: "/>
+            android:text="Based on your Thingy data, your current possible movement is: " />
 
     </LinearLayout>
 
 
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:layout_constraintBottom_toBottomOf="parent"
 
+        app:itemBackground="@color/button_icon_bg"
+        app:itemIconTint="@drawable/selector"
+        app:itemTextColor="@drawable/selector"
+        app:menu="@menu/menu_navigation" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
