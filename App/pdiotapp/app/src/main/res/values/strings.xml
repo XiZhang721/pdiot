@@ -55,4 +55,5 @@
     <string name="respeck_string">Respeck</string>
     <string name="thingy_string">Thingy</string>
     <string name="movement_text">Based on your %1$s data, your are %2$s</string>
+    <string name="add_hint">Currently does not support other sensors.</string>
 </resources>

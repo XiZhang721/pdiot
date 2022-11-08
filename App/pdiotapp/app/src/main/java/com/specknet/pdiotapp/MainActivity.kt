@@ -12,6 +12,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,15 +28,18 @@ import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.RecyclerAdapter
 import com.specknet.pdiotapp.utils.Utils
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     private var layoutManager: RecyclerView.LayoutManager ?= null
     private var adapter: RecyclerView.Adapter<RecyclerAdapter.ViewHolder> ?= null
     // buttons and textviews
-    lateinit var liveProcessingButton: Button
-    lateinit var pairingButton: Button
-    lateinit var recordButton: Button
+    lateinit var refreshButton: ImageButton
+    lateinit var addButton: ImageButton
+    private var hintShowing: Boolean = false
+    lateinit var hintText:TextView
+    private var timer:Timer = Timer()
 
     // permissions
     lateinit var permissionAlertDialog: AlertDialog.Builder
@@ -92,14 +97,14 @@ class MainActivity : AppCompatActivity() {
             }
             false
         }
+        refreshButton = findViewById(R.id.refresh_button)
+        addButton = findViewById(R.id.add_button)
+        hintText = findViewById(R.id.hintText)
 
-//        liveProcessingButton = findViewById(R.id.live_button)
-//        pairingButton = findViewById(R.id.ble_button)
-//        recordButton = findViewById(R.id.record_button)
 
         permissionAlertDialog = AlertDialog.Builder(this)
 
-        //setupClickListeners()
+        setupClickListeners()
 
         setupPermissions()
 
@@ -112,15 +117,41 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        liveProcessingButton.setOnClickListener {
-            val intent = Intent(this, LiveDataActivity::class.java)
+        refreshButton.setOnClickListener {
+            val intent = Intent(this, this.javaClass)
             startActivity(intent)
         }
 
+        addButton.setOnClickListener {
+            hintTimeCount()
+        }
+    }
 
-        recordButton.setOnClickListener {
-            val intent = Intent(this, RecordingActivity::class.java)
-            startActivity(intent)
+    private fun showHint() {
+        if(hintShowing){
+            return
+        }
+        hintText.text = getString(R.string.add_hint)
+        hintShowing = true
+    }
+
+    private fun hintTimeCount(){
+        var hideTask: TimerTask = object : TimerTask(){
+            override fun run() {
+                if(!hintShowing){
+                    return
+                }
+                hintText.text = ""
+                hintShowing = false
+            }
+        }
+        if(hintShowing){
+            timer.cancel()
+            timer = Timer()
+            timer.schedule(hideTask,3000)
+        }else{
+            showHint()
+            timer.schedule(hideTask,3000)
         }
     }
 
