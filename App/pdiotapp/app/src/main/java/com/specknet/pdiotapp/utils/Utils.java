@@ -15,6 +15,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class Utils {
@@ -122,10 +124,21 @@ public class Utils {
         return new float[]{accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, mag_x, mag_y, mag_z};
     }
 
-    public static String windowDataToJSON(float[] data_window){
+    public static String windowDataToJSON(float[] dataWindow){
+        assert dataWindow != null;
+        String device;
+        if(dataWindow.length == 300){
+            device = "respeck";
+        }else if(dataWindow.length == 450){
+            device = "thingy";
+        }else{
+            throw new IllegalArgumentException("The length of data window should either be 300(50*6) for Respeck, " +
+                    "or 450(50*9) for Thingy.");
+        }
+        Map<String, float[]> dataWindowWithDevice= new HashMap<>();
+        dataWindowWithDevice.put(device,dataWindow);
         Gson gson = new Gson();
-        assert data_window != null;
-        return gson.toJson(data_window);
+        return gson.toJson(dataWindowWithDevice);
     }
 
 }
