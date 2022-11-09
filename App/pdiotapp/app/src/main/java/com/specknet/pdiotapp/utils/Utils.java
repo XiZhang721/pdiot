@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService;
 
 import java.io.PrintWriter;
@@ -119,6 +120,12 @@ public class Utils {
         float mag_z = (float) (getIntValue(values, 16)) / (1 << 4);
 
         return new float[]{accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, mag_x, mag_y, mag_z};
+    }
+
+    public static String windowDataToJSON(float[] data_window){
+        Gson gson = new Gson();
+        assert data_window != null;
+        return gson.toJson(data_window);
     }
 
 }
