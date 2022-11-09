@@ -124,28 +124,85 @@ public class Utils {
         return new float[]{accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, mag_x, mag_y, mag_z};
     }
 
-    public static String windowDataToJSON(float[] dataWindow){
-        assert dataWindow != null;
-        String device;
-        if(dataWindow.length == 300){
-            device = "respeck";
-        }else if(dataWindow.length == 450){
-            device = "thingy";
-        }else{
+    public static String twoSensorWindowToJSON(float[] respeckDataWindow, float[] thingy_dataWindow){
+        assert respeckDataWindow != null && thingy_dataWindow != null;
+        String device1,device2;
+        if(respeckDataWindow.length == 300 && thingy_dataWindow.length == 450){
+            device1 = "respeck";
+            device2 = "thingy";
+        }
+        else{
             throw new IllegalArgumentException("The length of data window should either be 300(50*6) for Respeck, " +
                     "or 450(50*9) for Thingy.");
         }
-        class deviceWindow{
-            String device;
-            float[] dataWindow;
-            deviceWindow(String device, float[] dataWindow){
-                this.device = device;
+//        deviceWindow dataWindowWithRespeck= new deviceWindow(device1,respeckDataWindow);
+//        deviceWindow dataWindowWithThingy = new deviceWindow(device2,thingy_dataWindow);
+//        deviceWindow[] dataWindows = {dataWindowWithRespeck,dataWindowWithThingy};
+        float[][] dataWindows = {respeckDataWindow,thingy_dataWindow};
+        class BothDevice{
+            String device = "both";
+            float[][] dataWindow;
+            BothDevice(float[][] dataWindow){
                 this.dataWindow = dataWindow;
             }
         }
-        deviceWindow dataWindowWithDevice= new deviceWindow(device,dataWindow);
+        BothDevice bothDevice = new BothDevice(dataWindows);
         Gson gson = new Gson();
-        return gson.toJson(dataWindowWithDevice);
+        return gson.toJson(bothDevice);
     }
 
+
+
+    public static String respeckWindowToJson(float[] respeckWindow) {
+        assert respeckWindow != null;
+        String device;
+        if(respeckWindow.length == 300){
+            device = "respeck";
+        }
+        else{
+            throw new IllegalArgumentException("The length of data window should either be 300(50*6) for Respeck. ");
+        }
+        deviceWindow dataWindowWithRespeck= new deviceWindow(device,respeckWindow);
+        Gson gson = new Gson();
+        return gson.toJson(dataWindowWithRespeck);
+    }
+
+    public static String thingyWindowToJson(float[] thingyWindow) {
+        assert thingyWindow != null;
+        String device;
+        if(thingyWindow.length == 450){
+            device = "thingy";
+        }
+        else{
+            throw new IllegalArgumentException("The length of data window should either be 300(50*6) for Respeck. ");
+        }
+        deviceWindow dataWindowWithThingy= new deviceWindow(device,thingyWindow);
+        Gson gson = new Gson();
+        return gson.toJson(dataWindowWithThingy);
+    }
+
+    public static class UserRequest{
+        String requestType;
+        User user;
+        public UserRequest(String requestType, User user){
+            this.requestType = requestType;
+            this.user = user;
+        }
+
+    }
+    public static String toRegisterJson(String username, String pwd) {
+        User user = new User(username, pwd);
+        String type = Constants.REGISTER_ACCOUNT;
+        UserRequest registerRequest = new UserRequest(type, user);
+        Gson gson = new Gson();
+        return gson.toJson(registerRequest);
+    }
+
+    public static String toLoginJson(String username,String pwd){
+        User user = new User(username, pwd);
+        String type = Constants.LOGIN_ACCOUNT;
+        UserRequest loginRequest = new UserRequest(type,user);
+        Gson gson = new Gson();
+        return gson.toJson(loginRequest);
+    }
 }
