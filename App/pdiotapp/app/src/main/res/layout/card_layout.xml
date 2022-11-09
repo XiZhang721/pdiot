@@ -60,7 +60,9 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 android:text="Connect"
                 android:gravity="center_horizontal"
-                android:textColor="@color/button_icon_light"/>
+                android:textStyle="bold"
+                android:backgroundTint="@color/button_icon_bg"
+                android:textColor="@color/button_icon_dark"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 

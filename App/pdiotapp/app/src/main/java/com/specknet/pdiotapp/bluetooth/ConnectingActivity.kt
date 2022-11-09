@@ -36,7 +36,7 @@ class ConnectingActivity : AppCompatActivity() {
     private lateinit var connectSensorsButton: Button
     private lateinit var restartConnectionButton: Button
 //    private lateinit var disconnectRespeckButton: Button
-
+    private lateinit var disconnectButton: Button
     // Thingy
 //    private lateinit var scanThingyButton: Button
     private lateinit var thingyID: EditText
@@ -58,6 +58,7 @@ class ConnectingActivity : AppCompatActivity() {
         respeckID = findViewById(R.id.respeck_code)
         connectSensorsButton = findViewById(R.id.connect_sensors_button)
         restartConnectionButton = findViewById(R.id.restart_service_button)
+        disconnectButton = findViewById(R.id.stop_service_button)
 
         thingyID = findViewById(R.id.thingy_code)
 
@@ -87,6 +88,10 @@ class ConnectingActivity : AppCompatActivity() {
 
         restartConnectionButton.setOnClickListener {
             startSpeckService()
+        }
+
+        disconnectButton.setOnClickListener {
+            stopSpeckService()
         }
 
 
@@ -169,7 +174,18 @@ class ConnectingActivity : AppCompatActivity() {
             this.stopService(Intent(this, BluetoothSpeckService::class.java))
             Toast.makeText(this, "restarting service with new sensors", Toast.LENGTH_SHORT).show()
             this.startService(Intent(this, BluetoothSpeckService::class.java))
+        }
+    }
 
+    fun stopSpeckService(){
+        // TODO if it's not already running
+        val isServiceRunning = Utils.isServiceRunning(BluetoothSpeckService::class.java, applicationContext)
+        Log.i("service","isServiceRunning = " + isServiceRunning)
+        if(!isServiceRunning){
+            Toast.makeText(this, "currently no sensor connected", Toast.LENGTH_SHORT).show()
+        }else{
+            this.stopService(Intent(this, BluetoothSpeckService::class.java))
+            Toast.makeText(this, "connections stopped", Toast.LENGTH_SHORT).show()
         }
     }
 
