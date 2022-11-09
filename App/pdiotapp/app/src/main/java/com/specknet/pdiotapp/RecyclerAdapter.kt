@@ -22,7 +22,6 @@ import com.specknet.pdiotapp.utils.ThingyLiveData
 
 class RecyclerAdapter(var mContext: Context): RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
     private var titles = arrayOf("Respeck","Thingy")
-    private var connectText = "Connection State:"
     private var successConnect = "Connected"
     private var failConnect = "Not Connected"
     private var buttonTextConn = "Connect"
@@ -38,14 +37,12 @@ class RecyclerAdapter(var mContext: Context): RecyclerView.Adapter<RecyclerAdapt
     inner class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView) {
         var itemImage: ImageView
         var itemTitle: TextView
-        var itemConnect: TextView
         var itemConnectState: TextView
         var connButton: Button
 
         init {
             itemImage = itemView.findViewById(R.id.item_image)
             itemTitle = itemView.findViewById(R.id.item_title)
-            itemConnect = itemView.findViewById(R.id.item_connect)
             itemConnectState = itemView.findViewById(R.id.item_connect_state)
             connButton = itemView.findViewById(R.id.item_connect_button)
 
@@ -75,13 +72,11 @@ class RecyclerAdapter(var mContext: Context): RecyclerView.Adapter<RecyclerAdapt
             }
         }
         holder.itemTitle.text = titles[position]
-        holder.itemConnect.text = connectText
         holder.itemImage.setImageResource(images[position])
-        var isOn:Boolean = false
-        if(position == 0) {
-            isOn = respeckOn
+        var isOn:Boolean = if(position == 0) {
+            respeckOn
         }else {
-            isOn = thingyOn
+            thingyOn
         }
         if(isOn){
             holder.itemConnectState.text = successConnect

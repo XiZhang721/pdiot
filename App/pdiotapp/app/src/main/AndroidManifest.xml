@@ -77,6 +77,10 @@
         <activity
             android:name=".RecordingActivity"
             android:screenOrientation="portrait" />
+        <activity android:name=".MainConnectActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".RegisterActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait">
