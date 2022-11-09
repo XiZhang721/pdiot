@@ -135,8 +135,15 @@ public class Utils {
             throw new IllegalArgumentException("The length of data window should either be 300(50*6) for Respeck, " +
                     "or 450(50*9) for Thingy.");
         }
-        Map<String, float[]> dataWindowWithDevice= new HashMap<>();
-        dataWindowWithDevice.put(device,dataWindow);
+        class deviceWindow{
+            String device;
+            float[] dataWindow;
+            deviceWindow(String device, float[] dataWindow){
+                this.device = device;
+                this.dataWindow = dataWindow;
+            }
+        }
+        deviceWindow dataWindowWithDevice= new deviceWindow(device,dataWindow);
         Gson gson = new Gson();
         return gson.toJson(dataWindowWithDevice);
     }
