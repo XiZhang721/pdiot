@@ -156,7 +156,7 @@ class RecordingActivity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId){
                 R.id.connection ->{
-                    val intent = Intent(this, MainActivity::class.java)
+                    val intent = Intent(this, MainConnectActivity::class.java)
                     startActivity(intent)
                     overridePendingTransition(0,0)
                     true

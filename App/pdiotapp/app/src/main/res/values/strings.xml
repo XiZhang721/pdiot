@@ -56,4 +56,10 @@
     <string name="thingy_string">Thingy</string>
     <string name="movement_text">Based on your %1$s data, your are %2$s</string>
     <string name="add_hint">Currently does not support other sensors.</string>
+    <string name="register_button_text"><u>Not yet an user? Register!</u></string>
+    <string name="login_failed">Incorrect username or password.</string>
+    <string name="back_login"><u>Back to login.</u></string>
+    <string name="register_username">The given username already exists.</string>
+    <string name="register_password">The two passwords do not match.</string>
+    <string name="register_success">Successfully registered!</string>
 </resources>
