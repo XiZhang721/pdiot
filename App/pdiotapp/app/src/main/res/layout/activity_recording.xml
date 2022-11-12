@@ -15,6 +15,8 @@
         android:text="Record Data"
         app:layout_constraintBottom_toTopOf="@id/sensor_position_side_container"
         app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="20sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -165,7 +167,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:layout_weight="1"
-            android:text="Start recording" />
+            android:text="Start recording"
+            android:textColor="@color/button_icon_dark"
+            android:backgroundTint="@color/button_icon_bg"/>
 
         <Button
             android:id="@+id/cancel_recording_button"
@@ -173,7 +177,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:layout_weight="1"
-            android:text="Cancel recording" />
+            android:text="Cancel recording"
+            android:textColor="@color/button_icon_dark"
+            android:backgroundTint="@color/button_icon_bg"/>
 
         <Button
             android:id="@+id/stop_recording_button"
@@ -181,7 +187,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:layout_weight="1"
-            android:text="Stop recording" />
+            android:text="Stop recording"
+            android:textColor="@color/button_icon_dark"
+            android:backgroundTint="@color/button_icon_bg"/>
 
     </LinearLayout>
 
@@ -212,7 +220,7 @@
         android:orientation="vertical"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+        app:layout_constraintBottom_toTopOf="@id/back_button"
         app:layout_constraintTop_toBottomOf="@+id/countup_container"
         tools:layout_editor_absoluteX="-16dp">
 
@@ -277,16 +285,22 @@
         </LinearLayout>
 
     </LinearLayout>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/back_button"
+        android:layout_width="140dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        app:itemBackground="@color/button_icon_bg"
-        app:itemIconTint="@drawable/selector"
-        app:itemTextColor="@drawable/selector"
+        app:layout_constraintTop_toBottomOf="@id/sensor_data"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:menu="@menu/menu_navigation" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="BACK"
+        android:textColor="@color/button_icon_dark"
+        android:backgroundTint="@color/button_icon_bg"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        />
+
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

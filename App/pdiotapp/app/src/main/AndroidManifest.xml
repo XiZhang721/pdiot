@@ -23,6 +23,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:name="androidx.multidex.MultiDexApplication"
         android:theme="@style/AppTheme">
         <service
             android:name=".bluetooth.BluetoothSpeckService"
@@ -71,6 +72,8 @@
             </intent-filter>
         </service>
 
+        <activity android:name=".UserActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".onboarding.OnBoardingActivity"
             android:screenOrientation="portrait" />

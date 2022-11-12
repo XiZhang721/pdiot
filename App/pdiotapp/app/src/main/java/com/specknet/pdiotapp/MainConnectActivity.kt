@@ -96,8 +96,8 @@ class MainConnectActivity: AppCompatActivity(){
                     overridePendingTransition(0,0)
                     true
                 }
-                R.id.record->{
-                    val intent = Intent(this, RecordingActivity::class.java)
+                R.id.user->{
+                    val intent = Intent(this, UserActivity::class.java)
                     startActivity(intent)
                     overridePendingTransition(0,0)
                     true

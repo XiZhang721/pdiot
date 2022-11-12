@@ -34,6 +34,8 @@ class RecordingActivity : AppCompatActivity() {
     lateinit var univSubjectIdInput: EditText
     lateinit var notesInput: EditText
 
+    lateinit var backButton: Button
+
     lateinit var timer: TextView
     lateinit var countUpTimer: CountUpTimer
 
@@ -151,28 +153,6 @@ class RecordingActivity : AppCompatActivity() {
                 timer.text = "Time elapsed: " + dateFormatted
             }
         }
-        var bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-        bottomNavigationView.selectedItemId = R.id.record
-        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
-            when (item.itemId){
-                R.id.connection ->{
-                    val intent = Intent(this, MainConnectActivity::class.java)
-                    startActivity(intent)
-                    overridePendingTransition(0,0)
-                    true
-                }
-                R.id.live->{
-                    val intent = Intent(this, LiveDataActivity::class.java)
-                    startActivity(intent)
-                    overridePendingTransition(0,0)
-                    true
-                }
-                R.id.record->{
-                    true
-                }
-            }
-            false
-        }
     }
 
     private fun setupViews() {
@@ -288,7 +268,7 @@ class RecordingActivity : AppCompatActivity() {
         startRecordingButton = findViewById(R.id.start_recording_button)
         cancelRecordingButton = findViewById(R.id.cancel_recording_button)
         stopRecordingButton = findViewById(R.id.stop_recording_button)
-
+        backButton = findViewById(R.id.back_button)
         disableView(stopRecordingButton)
         disableView(cancelRecordingButton)
 
@@ -315,7 +295,7 @@ class RecordingActivity : AppCompatActivity() {
             Toast.makeText(this, "Starting recording", Toast.LENGTH_SHORT).show()
 
             disableView(startRecordingButton)
-
+            disableView(backButton)
             enableView(cancelRecordingButton)
             enableView(stopRecordingButton)
 
@@ -331,6 +311,7 @@ class RecordingActivity : AppCompatActivity() {
             Toast.makeText(this, "Cancelling recording", Toast.LENGTH_SHORT).show()
 
             enableView(startRecordingButton)
+            enableView(backButton)
             disableView(cancelRecordingButton)
             disableView(stopRecordingButton)
 
@@ -347,6 +328,7 @@ class RecordingActivity : AppCompatActivity() {
             Toast.makeText(this, "Stop recording", Toast.LENGTH_SHORT).show()
 
             enableView(startRecordingButton)
+            enableView(backButton)
             disableView(cancelRecordingButton)
             disableView(stopRecordingButton)
 
@@ -356,6 +338,11 @@ class RecordingActivity : AppCompatActivity() {
             enableView(notesInput)
 
             stopRecording()
+        }
+
+        backButton.setOnClickListener {
+            val intent = Intent(this, UserActivity::class.java)
+            startActivity(intent)
         }
 
     }
