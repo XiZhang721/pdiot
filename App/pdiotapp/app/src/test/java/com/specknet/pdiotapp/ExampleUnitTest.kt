@@ -20,9 +20,10 @@ class ExampleUnitTest {
     fun register_Correct(){
         var serverUrl = "http://www.pdiot-c.ew.r.appspot.com/"
         var userRuestUrl = "http://www.pdiot-c.ew.r.appspot.com/"
-        var ccon = CloudConnection.setUpConnection(serverUrl, userRuestUrl)
+        var ccon = CloudConnection.setUpUserDataConnection(userRuestUrl)
         var response = ccon.sendRegisterPostRequest("aka","123456")
         print(response)
+
 
     }
 
