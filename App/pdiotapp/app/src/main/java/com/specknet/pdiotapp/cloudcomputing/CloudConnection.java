@@ -17,17 +17,18 @@ public class CloudConnection{
     private URL serverUrl;
     private URL userRequestUrl;
     public String classificationResult;
-    private CloudConnection(String serverUrl){
+    private CloudConnection(String serverUrl, String userRequestUrl){
         try {
             this.serverUrl = new URL(serverUrl);
+            this.userRequestUrl = new URL(userRequestUrl);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static CloudConnection setUpConnection(String serverUrl){
+    public static CloudConnection setUpConnection(String serverUrl, String userRequestUrl){
         if(instance == null){
-            instance = new CloudConnection(serverUrl);
+            instance = new CloudConnection(serverUrl, userRequestUrl);
         }
         assert instance != null;
         return instance;
