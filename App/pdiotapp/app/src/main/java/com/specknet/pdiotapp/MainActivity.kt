@@ -8,10 +8,13 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.text.method.PasswordTransformationMethod
 import android.util.Log
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -32,15 +35,14 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    private var layoutManager: RecyclerView.LayoutManager ?= null
-    private var adapter: RecyclerView.Adapter<RecyclerAdapter.ViewHolder> ?= null
-    // buttons and textviews
-    lateinit var refreshButton: ImageButton
-    lateinit var addButton: ImageButton
-    private var hintShowing: Boolean = false
-    lateinit var hintText:TextView
-    private var timer:Timer = Timer()
+    lateinit var usernameInput: EditText
+    lateinit var passwordInput: EditText
 
+    lateinit var loginButton: Button
+    lateinit var registerButton: Button
+    private var hintShowing: Boolean = false
+    private var timer: Timer = Timer()
+    lateinit var hintText: TextView
     // permissions
     lateinit var permissionAlertDialog: AlertDialog.Builder
 
@@ -71,36 +73,13 @@ class MainActivity : AppCompatActivity() {
             val introIntent = Intent(this, OnBoardingActivity::class.java)
             startActivity(introIntent)
         }
-        layoutManager = LinearLayoutManager(this)
-        recycleView.layoutManager = layoutManager
-        adapter = RecyclerAdapter(this)
-        recycleView.adapter = adapter
-        var bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-        bottomNavigationView.selectedItemId = R.id.connection
-        bottomNavigationView.setOnNavigationItemSelectedListener { item ->
-            when (item.itemId){
-                R.id.connection ->{
-                    true
-                }
-                R.id.live->{
-                    val intent = Intent(this, LiveDataActivity::class.java)
-                    startActivity(intent)
-                    overridePendingTransition(0,0)
-                    true
-                }
-                R.id.record->{
-                    val intent = Intent(this, RecordingActivity::class.java)
-                    startActivity(intent)
-                    overridePendingTransition(0,0)
-                    true
-                }
-            }
-            false
-        }
-        refreshButton = findViewById(R.id.refresh_button)
-        addButton = findViewById(R.id.add_button)
-        hintText = findViewById(R.id.hintText)
-
+        hintText = findViewById(R.id.login_hint)
+        usernameInput = findViewById(R.id.username_input)
+        passwordInput = findViewById(R.id.password_input)
+        loginButton = findViewById(R.id.login_button)
+        registerButton = findViewById(R.id.register_page_loader)
+        hintText.text = ""
+        passwordInput.transformationMethod = PasswordTransformationMethod.getInstance()
 
         permissionAlertDialog = AlertDialog.Builder(this)
 
@@ -108,7 +87,7 @@ class MainActivity : AppCompatActivity() {
 
         setupPermissions()
 
-        setupBluetoothService()
+        //setupBluetoothService()
 
         // register a broadcast receiver for respeck status
         filter.addAction(Constants.ACTION_RESPECK_CONNECTED)
@@ -116,22 +95,35 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun setupClickListeners() {
-        refreshButton.setOnClickListener {
-            val intent = Intent(this, this.javaClass)
-            startActivity(intent)
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            return false
         }
-
-        addButton.setOnClickListener {
-            hintTimeCount()
-        }
+        return super.onKeyDown(keyCode, event)
     }
 
+    private fun setupClickListeners() {
+        loginButton.setOnClickListener {
+            var isLoginSuccess = loginCheck(usernameInput.text.toString(),passwordInput.text.toString())
+            if(isLoginSuccess){
+                val intent = Intent(this, MainConnectActivity::class.java)
+                startActivity(intent)
+            }else{
+                usernameInput.text.clear()
+                passwordInput.text.clear()
+                hintTimeCount()
+            }
+        }
+        registerButton.setOnClickListener {
+            val intent = Intent(this, RegisterActivity::class.java)
+            startActivity(intent)
+        }
+    }
     private fun showHint() {
         if(hintShowing){
             return
         }
-        hintText.text = getString(R.string.add_hint)
+        hintText.text = getString(R.string.login_failed)
         hintShowing = true
     }
 
@@ -148,11 +140,15 @@ class MainActivity : AppCompatActivity() {
         if(hintShowing){
             timer.cancel()
             timer = Timer()
-            timer.schedule(hideTask,3000)
+            timer.schedule(hideTask,5000)
         }else{
             showHint()
-            timer.schedule(hideTask,3000)
+            timer.schedule(hideTask,5000)
         }
+    }
+
+    private fun loginCheck(username: String, password: String):Boolean{
+        return true
     }
 
     private fun setupPermissions() {

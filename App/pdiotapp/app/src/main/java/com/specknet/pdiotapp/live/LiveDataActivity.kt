@@ -15,9 +15,7 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.specknet.pdiotapp.MainActivity
-import com.specknet.pdiotapp.R
-import com.specknet.pdiotapp.RecordingActivity
+import com.specknet.pdiotapp.*
 import com.specknet.pdiotapp.ml.RespeckModel
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.RESpeckLiveData
@@ -79,7 +77,7 @@ class LiveDataActivity : AppCompatActivity() {
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId){
                 R.id.connection ->{
-                    val intent = Intent(this, MainActivity::class.java)
+                    val intent = Intent(this, MainConnectActivity::class.java)
                     startActivity(intent)
                     overridePendingTransition(0,0)
                     true
@@ -87,8 +85,8 @@ class LiveDataActivity : AppCompatActivity() {
                 R.id.live->{
                     true
                 }
-                R.id.record->{
-                    val intent = Intent(this, RecordingActivity::class.java)
+                R.id.user->{
+                    val intent = Intent(this, UserActivity::class.java)
                     startActivity(intent)
                     overridePendingTransition(0,0)
                     true
