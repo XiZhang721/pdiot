@@ -119,6 +119,8 @@ public class Constants {
     public static final int RECONNECTION_TIMEOUT_MILLIS = 10000;
     public static final long RESPECK_CHARACTERISTIC_CHANGE_TIMEOUT_MS = 4000; // 4 seconds
     public static final String CSV_DELIMITER = ","; // yes it's just a comma :)
+    public static final String REGISTER_ACCOUNT = "register";
+    public static final String LOGIN_ACCOUNT = "login";
 
     // Information for config content provider
     public static class Config {

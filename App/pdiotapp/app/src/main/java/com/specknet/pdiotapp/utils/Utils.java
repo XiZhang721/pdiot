@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService;
 
 import java.io.PrintWriter;
@@ -14,6 +15,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class Utils {
@@ -121,4 +124,84 @@ public class Utils {
         return new float[]{accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, mag_x, mag_y, mag_z};
     }
 
+    public static String twoSensorWindowToJSON(float[] respeckDataWindow, float[] thingy_dataWindow){
+        assert respeckDataWindow != null && thingy_dataWindow != null;
+        String device1,device2;
+        if(respeckDataWindow.length == 300 && thingy_dataWindow.length == 450){
+            device1 = "respeck";
+            device2 = "thingy";
+        }
+        else{
+            throw new IllegalArgumentException("The length of data window should either be 300(50*6) for Respeck, " +
+                    "or 450(50*9) for Thingy.");
+        }
+//        deviceWindow dataWindowWithRespeck= new deviceWindow(device1,respeckDataWindow);
+//        deviceWindow dataWindowWithThingy = new deviceWindow(device2,thingy_dataWindow);
+//        deviceWindow[] dataWindows = {dataWindowWithRespeck,dataWindowWithThingy};
+        System.out.println(respeckDataWindow.length);
+        System.out.println(thingy_dataWindow.length);
+        float[][] dataWindows = {respeckDataWindow,thingy_dataWindow};
+        System.out.println(dataWindows.length);
+
+        BothDevice bothDevice = new BothDevice(dataWindows);
+        System.out.println(bothDevice.device);
+        Gson gson = new Gson();
+
+        return gson.toJson(bothDevice);
+    }
+
+
+
+    public static String respeckWindowToJson(float[] respeckWindow) {
+        assert respeckWindow != null;
+        String device;
+        if(respeckWindow.length == 300){
+            device = "respeck";
+        }
+        else{
+            throw new IllegalArgumentException("The length of data window should be 300(50*6) for Respeck. ");
+        }
+        deviceWindow dataWindowWithRespeck= new deviceWindow(device,respeckWindow);
+        Gson gson = new Gson();
+        return gson.toJson(dataWindowWithRespeck);
+    }
+
+    public static String thingyWindowToJson(float[] thingyWindow) {
+        assert thingyWindow != null;
+        String device;
+        if(thingyWindow.length == 450){
+            device = "thingy";
+        }
+        else{
+            throw new IllegalArgumentException("The length of data window should be 450(50*9) for Thingy. ");
+        }
+        deviceWindow dataWindowWithThingy= new deviceWindow(device,thingyWindow);
+        Gson gson = new Gson();
+        return gson.toJson(dataWindowWithThingy);
+    }
+
+    public static class UserRequest{
+        String requestType;
+        User user;
+        public UserRequest(String requestType, User user){
+            this.requestType = requestType;
+            this.user = user;
+        }
+
+    }
+    public static String toRegisterJson(String username, String pwd) {
+        User user = new User(username, pwd);
+        String type = Constants.REGISTER_ACCOUNT;
+        UserRequest registerRequest = new UserRequest(type, user);
+        Gson gson = new Gson();
+        return gson.toJson(user);
+    }
+
+    public static String toLoginJson(String username,String pwd){
+        User user = new User(username, pwd);
+        String type = Constants.LOGIN_ACCOUNT;
+        UserRequest loginRequest = new UserRequest(type,user);
+        Gson gson = new Gson();
+        return gson.toJson(user);
+    }
 }
