@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.method.PasswordTransformationMethod
 import android.util.Log
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
@@ -86,12 +87,19 @@ class MainActivity : AppCompatActivity() {
 
         setupPermissions()
 
-        setupBluetoothService()
+        //setupBluetoothService()
 
         // register a broadcast receiver for respeck status
         filter.addAction(Constants.ACTION_RESPECK_CONNECTED)
         filter.addAction(Constants.ACTION_RESPECK_DISCONNECTED)
 
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            return false
+        }
+        return super.onKeyDown(keyCode, event)
     }
 
     private fun setupClickListeners() {

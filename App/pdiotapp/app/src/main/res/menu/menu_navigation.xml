@@ -3,13 +3,13 @@
     <item
         android:id="@+id/connection"
         android:title="Connect"
-        android:icon="@mipmap/conn_dark"/>
+        android:icon="@mipmap/conn_icon"/>
     <item
         android:id="@+id/live"
         android:title="Watch Live"
-        android:icon="@mipmap/live_dark"/>
+        android:icon="@mipmap/live_icon"/>
     <item
-        android:id="@+id/record"
-        android:title="Record Data"
-        android:icon="@mipmap/record_dark"/>
+        android:id="@+id/user"
+        android:title="Profile"
+        android:icon="@mipmap/user_icon"/>
 </menu>

@@ -181,7 +181,7 @@
                     android:textStyle="bold"
                     android:textColor="@color/button_icon_dark"
                     android:backgroundTint="@color/button_icon_bg"
-                    android:text = "Stop connection"/>
+                    android:text = "Disconnect"/>
             </LinearLayout>
 
         </LinearLayout>
