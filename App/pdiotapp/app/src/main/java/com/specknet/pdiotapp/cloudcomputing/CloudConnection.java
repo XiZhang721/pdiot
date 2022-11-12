@@ -150,6 +150,7 @@ public class CloudConnection{
 
     public String sendRegisterPostRequest(String username,String pwd) throws IOException {
         String usrRequestJson = Utils.toRegisterJson(username, pwd);
+        System.out.println(usrRequestJson);
         if (this.userDataConnection == null){
             this.userDataConnection = (HttpURLConnection) this.userRequestUrl.openConnection();
         }
@@ -161,10 +162,11 @@ public class CloudConnection{
         byte[] input = usrRequestJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
         os.flush();
-        os.close();
+//        os.close();
 
         int responseCode = this.userDataConnection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK){
+            System.out.print(responseCode);
             BufferedReader br = new BufferedReader(
                     new InputStreamReader(this.userDataConnection.getInputStream(), StandardCharsets.UTF_8));
             StringBuilder response = new StringBuilder();
@@ -174,10 +176,14 @@ public class CloudConnection{
             }
             System.out.println(response);
             br.close();
+            os.close();
             return response.toString();
+
         }else{
+            System.out.print(responseCode);
             Exception e = new Exception("The POST request for register account is failed.");
             e.printStackTrace();
+            os.close();
             return null;
         }
     }

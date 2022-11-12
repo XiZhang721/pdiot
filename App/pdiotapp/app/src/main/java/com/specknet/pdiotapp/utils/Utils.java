@@ -138,16 +138,15 @@ public class Utils {
 //        deviceWindow dataWindowWithRespeck= new deviceWindow(device1,respeckDataWindow);
 //        deviceWindow dataWindowWithThingy = new deviceWindow(device2,thingy_dataWindow);
 //        deviceWindow[] dataWindows = {dataWindowWithRespeck,dataWindowWithThingy};
+        System.out.println(respeckDataWindow.length);
+        System.out.println(thingy_dataWindow.length);
         float[][] dataWindows = {respeckDataWindow,thingy_dataWindow};
-        class BothDevice{
-            String device = "both";
-            float[][] dataWindow;
-            BothDevice(float[][] dataWindow){
-                this.dataWindow = dataWindow;
-            }
-        }
+        System.out.println(dataWindows.length);
+
         BothDevice bothDevice = new BothDevice(dataWindows);
+        System.out.println(bothDevice.device);
         Gson gson = new Gson();
+
         return gson.toJson(bothDevice);
     }
 
@@ -160,7 +159,7 @@ public class Utils {
             device = "respeck";
         }
         else{
-            throw new IllegalArgumentException("The length of data window should either be 300(50*6) for Respeck. ");
+            throw new IllegalArgumentException("The length of data window should be 300(50*6) for Respeck. ");
         }
         deviceWindow dataWindowWithRespeck= new deviceWindow(device,respeckWindow);
         Gson gson = new Gson();
@@ -174,7 +173,7 @@ public class Utils {
             device = "thingy";
         }
         else{
-            throw new IllegalArgumentException("The length of data window should either be 300(50*6) for Respeck. ");
+            throw new IllegalArgumentException("The length of data window should be 450(50*9) for Thingy. ");
         }
         deviceWindow dataWindowWithThingy= new deviceWindow(device,thingyWindow);
         Gson gson = new Gson();
@@ -195,7 +194,7 @@ public class Utils {
         String type = Constants.REGISTER_ACCOUNT;
         UserRequest registerRequest = new UserRequest(type, user);
         Gson gson = new Gson();
-        return gson.toJson(registerRequest);
+        return gson.toJson(user);
     }
 
     public static String toLoginJson(String username,String pwd){
@@ -203,6 +202,6 @@ public class Utils {
         String type = Constants.LOGIN_ACCOUNT;
         UserRequest loginRequest = new UserRequest(type,user);
         Gson gson = new Gson();
-        return gson.toJson(loginRequest);
+        return gson.toJson(user);
     }
 }
