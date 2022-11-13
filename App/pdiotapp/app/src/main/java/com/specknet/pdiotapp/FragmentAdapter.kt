@@ -7,13 +7,14 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 
 class FragmentAdapter(fragmentManager: FragmentManager,lifecycle: Lifecycle) : FragmentStateAdapter(fragmentManager, lifecycle) {
     override fun getItemCount(): Int {
-        return 2
+        return 3
     }
 
     override fun createFragment(position: Int): Fragment {
         return when(position){
             0 -> RespeckFragment()
             1 -> ThingyFragment()
+            3 -> BothFragment()
             else-> RespeckFragment()
         }
     }

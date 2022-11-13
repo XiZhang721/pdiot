@@ -64,7 +64,7 @@ class LiveDataActivity : AppCompatActivity() {
 
 
 
-    var tabTitle = arrayOf("Respeck","Thingy")
+    var tabTitle = arrayOf("Respeck","Thingy","Both")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_live_data)

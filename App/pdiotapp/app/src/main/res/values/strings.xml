@@ -52,9 +52,18 @@
     <string name="thingy_accel">Accel = (%1$.3f, %2$.3f, %3$.3f)</string>
     <string name="thingy_gyro">Gyro = (%1$.3f, %2$.3f, %3$.3f)</string>
     <string name="thingy_mag">Mag = (%1$.3f, %2$.3f, %3$.3f)</string>
+
+    <string name="both_respeck_accel">Respeck Accel = (%1$.3f, %2$.3f, %3$.3f)</string>
+    <string name="both_respeck_gyro">Respeck Gyro = (%1$.3f, %2$.3f, %3$.3f)</string>
+
+    <string name="both_thingy_accel">Thingy Accel = (%1$.3f, %2$.3f, %3$.3f)</string>
+    <string name="both_thingy_gyro">Thingy Gyro = (%1$.3f, %2$.3f, %3$.3f)</string>
+    <string name="both_thingy_mag">Thingy Mag = (%1$.3f, %2$.3f, %3$.3f)</string>
+
     <string name="respeck_string">Respeck</string>
     <string name="thingy_string">Thingy</string>
     <string name="movement_text">Based on your %1$s data, your are %2$s</string>
+    <string name="movement_both_text">Based on your data from both Respeck and Thingy, your are %2$s</string>
     <string name="add_hint">Currently does not support other sensors.</string>
     <string name="register_button_text"><u>Not yet an user? Register!</u></string>
     <string name="login_failed">Incorrect username or password.</string>
