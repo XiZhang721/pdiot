@@ -22,7 +22,7 @@ public class Constants {
     public static final String RESPECK_MAC_ADDRESS_PREF = "respeck_id_pref";
     public static final String RESPECK_VERSION = "respeck_version";
     public static final String THINGY_MAC_ADDRESS_PREF = "thingy_id_pref";
-
+    public static final String USERNAME_PREF = "username_pref";
     //The REQUEST_ENABLE_BT constant passed to startActivityForResult(android.content.Intent, int)
     // is a locally-defined integer (which must be greater than 0) that the system passes back
     // to you in your onActivityResult(int, int, android.content.Intent) implementation as the requestCode parameter.
