@@ -123,7 +123,7 @@ public class Utils {
         return new float[]{accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, mag_x, mag_y, mag_z};
     }
 
-    public static String twoSensorWindowToJSON(float[] respeckDataWindow, float[] thingy_dataWindow){
+    public static String twoSensorWindowToJSON(String username, float[] respeckDataWindow, float[] thingy_dataWindow){
         assert respeckDataWindow != null && thingy_dataWindow != null;
         String device1,device2;
         if(respeckDataWindow.length == 300 && thingy_dataWindow.length == 450){
@@ -142,7 +142,7 @@ public class Utils {
         float[][] dataWindows = {respeckDataWindow,thingy_dataWindow};
         System.out.println(dataWindows.length);
 
-        BothDevice bothDevice = new BothDevice(dataWindows);
+        BothDevice bothDevice = new BothDevice(username,dataWindows);
 
         Gson gson = new Gson();
         System.out.println(gson.toJson(bothDevice));
@@ -201,6 +201,13 @@ public class Utils {
         String type = Constants.LOGIN_ACCOUNT;
         UserRequest loginRequest = new UserRequest(type,user);
         Gson gson = new Gson();
+        return gson.toJson(user);
+    }
+
+    public static String toHistoricalJson(String username){
+        Gson gson = new Gson();
+        Map<String,String> user = new HashMap<>();
+        user.put("username",username);
         return gson.toJson(user);
     }
 }

@@ -63,7 +63,7 @@ class ExampleUnitTest {
 
         var f2 = FloatArray(450){_ -> 2f}
         f2[1] = 43f
-        var json = Utils.twoSensorWindowToJSON(f1,f2)
+        var json = Utils.twoSensorWindowToJSON("d",f1,f2)
         print(json)
 
     }
@@ -73,9 +73,9 @@ class ExampleUnitTest {
         var f1= FloatArray(300){_ -> 1f};
 
         var f2 = FloatArray(450){_ -> 2f}
-        var serverRequestUrl = "https://pdiot-c.ew.r.appspot.com/inference"
+        var serverRequestUrl = "https://pdiot-c.ew.r.appspot.com/test"
         var ccon = CloudConnection.setUpServerConnection(serverRequestUrl)
-        ccon.sendTwoSensorDataPostRequest(f1,f2)
+        ccon.sendTwoSensorDataPostRequest("d",f1,f2)
     }
 
     @Test
@@ -92,6 +92,27 @@ class ExampleUnitTest {
         var serverRequestUrl = "https://pdiot-c.ew.r.appspot.com/inference"
         var ccon = CloudConnection.setUpServerConnection(serverRequestUrl)
         ccon.sendRespeckDataPostRequest("d",f1)
+    }
+
+    @Test
+    fun toHistoicalJson(){
+        var f1:String = "aaa"
+        var r = Utils.toHistoricalJson("aaa")
+        print(r)
+
+    }
+
+    @Test
+    fun sendHistoricalRequest(){
+        var f1:String = "d"
+        var hisricalUrl = "https://pdiot-c.ew.r.appspot.com/history"
+        var ccon = CloudConnection.setUpHistoricalConnection(hisricalUrl)
+        var r = ccon.sendHistoricalPostRequest(f1);
+        var gson:Gson = Gson();
+        var rr = gson.fromJson(r, FloatArray::class.java)
+        for (i in 0..rr.size-1){
+            print(rr[i])
+        }
     }
 
 

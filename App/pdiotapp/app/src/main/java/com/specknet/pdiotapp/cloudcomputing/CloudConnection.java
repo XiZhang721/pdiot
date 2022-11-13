@@ -1,7 +1,5 @@
 package com.specknet.pdiotapp.cloudcomputing;
-import android.os.AsyncTask;
 
-import com.google.gson.Gson;
 import com.specknet.pdiotapp.utils.Utils;
 
 import java.io.BufferedReader;
@@ -16,9 +14,11 @@ import java.nio.charset.StandardCharsets;
 public class CloudConnection{
     private static CloudConnection instance = null;
     public HttpURLConnection sensorDataConnection;
-    public HttpURLConnection userDataConnection;
+    public HttpURLConnection hitoricalConnection;
+    public HttpURLConnection historicalConnection;
     private URL serverUrl;
-    private URL userRequestUrl;
+    private URL hisoticalUrl;
+    private URL historicalUrl;
     public String classificationResult;
     private CloudConnection(){
         try {
@@ -41,14 +41,24 @@ public class CloudConnection{
         if(instance == null){
             instance = new CloudConnection();
         }
-        instance.userRequestUrl = new URL(userRequestUrl);
+        instance.hisoticalUrl = new URL(userRequestUrl);
 
         assert instance != null;
         return instance;
     }
 
-    public String sendTwoSensorDataPostRequest(float[] respeckWindow, float[] thingyWindow) throws IOException {
-        String dataJson = Utils.twoSensorWindowToJSON(respeckWindow, thingyWindow);
+    public static CloudConnection setUpHistoricalConnection(String historicalUrl) throws MalformedURLException{
+        if(instance == null){
+            instance = new CloudConnection();
+        }
+        instance.historicalUrl = new URL(historicalUrl);
+
+        assert instance != null;
+        return instance;
+    }
+
+    public String sendTwoSensorDataPostRequest(String username, float[] respeckWindow, float[] thingyWindow) throws IOException {
+        String dataJson = Utils.twoSensorWindowToJSON(username,respeckWindow, thingyWindow);
         if (this.sensorDataConnection == null){
             this.sensorDataConnection = (HttpURLConnection)this.serverUrl.openConnection();
             this.sensorDataConnection.setRequestMethod("POST");
@@ -155,25 +165,25 @@ public class CloudConnection{
     public String sendRegisterPostRequest(String username,String pwd) throws IOException {
         String usrRequestJson = Utils.toRegisterJson(username, pwd);
         System.out.println(usrRequestJson);
-        if (this.userDataConnection == null){
-            this.userDataConnection = (HttpURLConnection) this.userRequestUrl.openConnection();
-            this.userDataConnection.setRequestMethod("POST");
-            this.userDataConnection.setRequestProperty("Content-Type", "application/json");
-            this.userDataConnection.setRequestProperty("Accept", "application/json");
-            this.userDataConnection.setDoOutput(true);
+        if (this.hitoricalConnection == null){
+            this.hitoricalConnection = (HttpURLConnection) this.hisoticalUrl.openConnection();
+            this.hitoricalConnection.setRequestMethod("POST");
+            this.hitoricalConnection.setRequestProperty("Content-Type", "application/json");
+            this.hitoricalConnection.setRequestProperty("Accept", "application/json");
+            this.hitoricalConnection.setDoOutput(true);
         }
 
-        OutputStream os = this.userDataConnection.getOutputStream();
+        OutputStream os = this.hitoricalConnection.getOutputStream();
         byte[] input = usrRequestJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
         os.flush();
         os.close();
 
-        int responseCode = this.userDataConnection.getResponseCode();
+        int responseCode = this.hitoricalConnection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK){
             System.out.print(responseCode);
             BufferedReader br = new BufferedReader(
-                    new InputStreamReader(this.userDataConnection.getInputStream(), StandardCharsets.UTF_8));
+                    new InputStreamReader(this.hitoricalConnection.getInputStream(), StandardCharsets.UTF_8));
             StringBuilder response = new StringBuilder();
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
@@ -193,24 +203,59 @@ public class CloudConnection{
 
     public String sendLoginPostRequest(String username,String pwd) throws IOException {
         String usrRequestJson = Utils.toRegisterJson(username, pwd);
-        if (this.userDataConnection == null){
-            this.userDataConnection = (HttpURLConnection) this.userRequestUrl.openConnection();
-            this.userDataConnection.setRequestMethod("POST");
-            this.userDataConnection.setRequestProperty("Content-Type", "application/json");
-            this.userDataConnection.setRequestProperty("Accept", "application/json");
-            this.userDataConnection.setDoOutput(true);
+        if (this.hitoricalConnection == null){
+            this.hitoricalConnection = (HttpURLConnection) this.hisoticalUrl.openConnection();
+            this.hitoricalConnection.setRequestMethod("POST");
+            this.hitoricalConnection.setRequestProperty("Content-Type", "application/json");
+            this.hitoricalConnection.setRequestProperty("Accept", "application/json");
+            this.hitoricalConnection.setDoOutput(true);
         }
 
-        OutputStream os = this.userDataConnection.getOutputStream();
+        OutputStream os = this.hitoricalConnection.getOutputStream();
         byte[] input = usrRequestJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
         os.flush();
         os.close();
 
-        int responseCode = this.userDataConnection.getResponseCode();
+        int responseCode = this.hitoricalConnection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK){
             BufferedReader br = new BufferedReader(
-                    new InputStreamReader(this.userDataConnection.getInputStream(), StandardCharsets.UTF_8));
+                    new InputStreamReader(this.hitoricalConnection.getInputStream(), StandardCharsets.UTF_8));
+            StringBuilder response = new StringBuilder();
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            System.out.println(response);
+            br.close();
+            return response.toString();
+        }else{
+            Exception e = new Exception("The POST request for register account is failed.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public String sendHistoricalPostRequest(String username) throws IOException{
+        String usrRequestJson = Utils.toHistoricalJson(username);
+        if (this.hitoricalConnection == null){
+            this.hitoricalConnection = (HttpURLConnection) this.historicalUrl.openConnection();
+            this.hitoricalConnection.setRequestMethod("POST");
+            this.hitoricalConnection.setRequestProperty("Content-Type", "application/json");
+            this.hitoricalConnection.setRequestProperty("Accept", "application/json");
+            this.hitoricalConnection.setDoOutput(true);
+        }
+
+        OutputStream os = this.hitoricalConnection.getOutputStream();
+        byte[] input = usrRequestJson.getBytes(StandardCharsets.UTF_8);
+        os.write(input, 0, input.length);
+        os.flush();
+        os.close();
+
+        int responseCode = this.hitoricalConnection.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK){
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(this.hitoricalConnection.getInputStream(), StandardCharsets.UTF_8));
             StringBuilder response = new StringBuilder();
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
@@ -231,9 +276,13 @@ public class CloudConnection{
             this.sensorDataConnection.disconnect();
             this.sensorDataConnection = null;
         }
-        if(this.userDataConnection!=null){
-            this.userDataConnection.disconnect();
-            this.userDataConnection = null;
+        if(this.hitoricalConnection !=null){
+            this.hitoricalConnection.disconnect();
+            this.hitoricalConnection = null;
+        }
+        if (this.hitoricalConnection != null){
+            this.historicalConnection.disconnect();
+            this.hitoricalConnection = null;
         }
     }
 

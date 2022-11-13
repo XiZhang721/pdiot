@@ -2,6 +2,7 @@ package com.specknet.pdiotapp
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -18,7 +19,9 @@ import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.utils.MPPointF
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.gson.Gson
 import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
+import com.specknet.pdiotapp.cloudcomputing.CloudConnection
 import com.specknet.pdiotapp.live.LiveDataActivity
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.Utils
@@ -41,10 +44,15 @@ class UserActivity: AppCompatActivity() {
         "Descending stairs",
         "General Movement",
         "Desk work")
-    private val testTime = listOf(0,0,10,0,0,100,0,0,40,500,20,200,0,0)
+//    private val testTime = listOf(0,0,10,0,0,100,0,0,40,500,20,200,0,0)
+    private lateinit var actualHistoricalData:FloatArray;
+    private lateinit var ccon: CloudConnection;
+    private var hitoricalUrl: String =  "https://pdiot-c.ew.r.appspot.com/history"
     lateinit var logoutButton: Button
     lateinit var recordButton: Button
     lateinit var userName: TextView
+    lateinit var sharedPreferences: SharedPreferences
+    lateinit var username: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,7 +120,7 @@ class UserActivity: AppCompatActivity() {
         pieChart.description.isEnabled = true
         pieChart.description.text = "Unit: second"
         pieChart.description.xOffset = 15f
-        pieChart.description.yOffset = -10f
+        pieChart.description.yOffset = -20f
         pieChart.description.textSize = 13f
         pieChart.setExtraOffsets(5f, 10f, 5f, 10f)
         pieChart.dragDecelerationFrictionCoef = 0.95f
@@ -125,10 +133,25 @@ class UserActivity: AppCompatActivity() {
         pieChart.animateY(1400, Easing.EaseInOutQuad)
         pieChart.legend.isEnabled = true
         pieChart.setDrawEntryLabels(false)
+        sharedPreferences = getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
+        ccon = CloudConnection.setUpHistoricalConnection(hitoricalUrl)
+        var response = "";
+        var thr = Thread(Runnable {
+            response = ccon.sendHistoricalPostRequest(username)
+        })
+        thr.start()
+        while (response == ""){}
+        thr.interrupt()
+        ccon.disconnect()
+        var gson:Gson = Gson()
+        var historical = gson.fromJson(response,IntArray::class.java)
+
         val entries: ArrayList<PieEntry> = ArrayList()
-        for(i in testTime.indices){
-            if(testTime.elementAt(i)>0){
-                entries.add(PieEntry(testTime.elementAt(i).toFloat(),movements.elementAt(i)))
+        for(i in historical.indices){
+            if(historical.elementAt(i)>0){
+                var sec = historical.elementAt(i).toFloat() * 2
+                entries.add(PieEntry(sec,movements.elementAt(i)))
             }
         }
 

@@ -178,11 +178,11 @@ class RespeckFragment : Fragment() {
         }
     }
 
-    fun chooseBest(arr: FloatArray):String{
-
-        var x = arr.indexOfFirst { it == arr.maxOrNull()!! }  // change name x to index
-        return resources.getStringArray(R.array.activity_follow_model_order)[x];
-    }
+//    fun chooseBest(arr: FloatArray):String{
+//
+//        var x = arr.indexOfFirst { it == arr.maxOrNull()!! }  // change name x to index
+//        return resources.getStringArray(R.array.activity_follow_model_order)[x];
+//    }
 
     fun updateGraph(x: Float, y: Float, z: Float) {
         // take the first element from the queue
