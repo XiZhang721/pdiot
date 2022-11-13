@@ -7,13 +7,17 @@ import android.text.method.PasswordTransformationMethod
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.specknet.pdiotapp.MainConnectActivity
 import com.specknet.pdiotapp.R
+import com.specknet.pdiotapp.cloudcomputing.CloudConnection
+import com.specknet.pdiotapp.utils.Utils
 import java.lang.IllegalArgumentException
+import java.net.HttpURLConnection
 import java.util.*
 
-class RegisterActivity: AppCompatActivity() {
+class RegisterActivity: AppCompatActivity(){
     lateinit var usernameInput: EditText
     lateinit var password1: EditText
     lateinit var password2: EditText
@@ -22,7 +26,8 @@ class RegisterActivity: AppCompatActivity() {
     lateinit var hintText: TextView
     private var hintShowing: Boolean = false
     private var timer: Timer = Timer()
-
+    private var registerUrl: String =  "https://pdiot-c.ew.r.appspot.com/register"
+    private lateinit var ccon: CloudConnection
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,7 +99,10 @@ class RegisterActivity: AppCompatActivity() {
                 if(!hintShowing){
                     return
                 }
-                hintText.text = ""
+                runOnUiThread(){
+                    hintText.text = ""
+                }
+
                 hintShowing = false
             }
         }
@@ -108,6 +116,33 @@ class RegisterActivity: AppCompatActivity() {
     }
 
     private fun registerCheck(username: String, password: String):Boolean{
-        return true
+        print(username)
+        print(password)
+        if(username.isEmpty() || password.isEmpty()){
+            return false
+        }
+        try {
+
+            ccon =  CloudConnection.setUpUserDataConnection(registerUrl)
+            var response:String = "";
+            var thr = Thread(Runnable{
+                response = ccon.sendRegisterPostRequest(username, password)
+
+            })
+            thr.start()
+            while (response == ""){}
+            thr.interrupt()
+            ccon.disconnect()
+
+            if (response == "1") {
+                return true
+            }
+
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
+        return false
+
+
     }
 }

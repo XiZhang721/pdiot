@@ -30,6 +30,7 @@ import com.specknet.pdiotapp.live.LiveDataActivity
 import com.specknet.pdiotapp.onboarding.OnBoardingActivity
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.RecyclerAdapter
+import com.specknet.pdiotapp.cloudcomputing.CloudConnection
 import com.specknet.pdiotapp.utils.Utils
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
@@ -46,6 +47,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var hintText: TextView
     // permissions
     lateinit var permissionAlertDialog: AlertDialog.Builder
+    private var loginUrl: String =  "https://pdiot-c.ew.r.appspot.com/login"
+    private lateinit var ccon: CloudConnection
 
     val permissionsForRequest = arrayListOf<String>()
 
@@ -142,7 +145,10 @@ class MainActivity : AppCompatActivity() {
                 if(!hintShowing){
                     return
                 }
-                hintText.text = ""
+                runOnUiThread(){
+                    hintText.text = ""
+                }
+
                 hintShowing = false
             }
         }
@@ -157,7 +163,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loginCheck(username: String, password: String):Boolean{
-        return true
+        print(username)
+        print(password)
+        if(username.isEmpty() || password.isEmpty()){
+            return false
+        }
+        try {
+
+            ccon =  CloudConnection.setUpUserDataConnection(loginUrl)
+            var response:String = "";
+            var thr=Thread(Runnable{
+                response = ccon.sendRegisterPostRequest(username, password)
+
+            })
+            thr.start()
+            while (response == ""){}
+            thr.interrupt()
+            ccon.disconnect()
+            if (response == "1") {
+                return true
+            }
+
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
+        return false
     }
 
     private fun setupPermissions() {

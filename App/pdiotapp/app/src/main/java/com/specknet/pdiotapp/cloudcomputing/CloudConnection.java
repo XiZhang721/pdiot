@@ -1,4 +1,6 @@
 package com.specknet.pdiotapp.cloudcomputing;
+import android.os.AsyncTask;
+
 import com.google.gson.Gson;
 import com.specknet.pdiotapp.utils.Utils;
 
@@ -49,12 +51,13 @@ public class CloudConnection{
         String dataJson = Utils.twoSensorWindowToJSON(respeckWindow, thingyWindow);
         if (this.sensorDataConnection == null){
             this.sensorDataConnection = (HttpURLConnection)this.serverUrl.openConnection();
+            this.sensorDataConnection.setRequestMethod("POST");
+            this.sensorDataConnection.setRequestProperty("Content-Type", "application/json");
+            this.sensorDataConnection.setRequestProperty("Accept","application/json");
+            this.sensorDataConnection.setDoOutput(true);
         }
 
-        this.sensorDataConnection.setRequestMethod("POST");
-        this.sensorDataConnection.setRequestProperty("Content-Type", "application/json");
-        this.sensorDataConnection.setRequestProperty("Accept","application/json");
-        this.sensorDataConnection.setDoOutput(true);
+
         OutputStream os = this.sensorDataConnection.getOutputStream();
         byte[] input = dataJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
@@ -80,15 +83,16 @@ public class CloudConnection{
         }
     }
 
-    public String sendRespeckDataPostRequest(float[] respeckWindow) throws IOException{
-        String dataJson = Utils.respeckWindowToJson(respeckWindow);
+    public String sendRespeckDataPostRequest(String username, float[] respeckWindow) throws IOException{
+        String dataJson = Utils.respeckWindowToJson(username,respeckWindow);
         if(this.sensorDataConnection==null){
             this.sensorDataConnection = (HttpURLConnection)this.serverUrl.openConnection();
+            this.sensorDataConnection.setRequestMethod("POST");
+            this.sensorDataConnection.setRequestProperty("Content-Type", "application/json");
+            this.sensorDataConnection.setRequestProperty("Accept","application/json");
+            this.sensorDataConnection.setDoOutput(true);
         }
-        this.sensorDataConnection.setRequestMethod("POST");
-        this.sensorDataConnection.setRequestProperty("Content-Type", "application/json");
-        this.sensorDataConnection.setRequestProperty("Accept","application/json");
-        this.sensorDataConnection.setDoOutput(true);
+
         OutputStream os = this.sensorDataConnection.getOutputStream();
         byte[] input = dataJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
@@ -114,15 +118,15 @@ public class CloudConnection{
         }
     }
 
-    public String sendThingyDataPostRequest(float[] thingyWindow) throws IOException{
-        String dataJson = Utils.thingyWindowToJson(thingyWindow);
+    public String sendThingyDataPostRequest(String username, float[] thingyWindow) throws IOException{
+        String dataJson = Utils.thingyWindowToJson(username,thingyWindow);
         if(this.sensorDataConnection==null){
             this.sensorDataConnection = (HttpURLConnection)this.serverUrl.openConnection();
+            this.sensorDataConnection.setRequestMethod("POST");
+            this.sensorDataConnection.setRequestProperty("Content-Type", "application/json");
+            this.sensorDataConnection.setRequestProperty("Accept","application/json");
+            this.sensorDataConnection.setDoOutput(true);
         }
-        this.sensorDataConnection.setRequestMethod("POST");
-        this.sensorDataConnection.setRequestProperty("Content-Type", "application/json");
-        this.sensorDataConnection.setRequestProperty("Accept","application/json");
-        this.sensorDataConnection.setDoOutput(true);
         OutputStream os = this.sensorDataConnection.getOutputStream();
         byte[] input = dataJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
@@ -153,16 +157,17 @@ public class CloudConnection{
         System.out.println(usrRequestJson);
         if (this.userDataConnection == null){
             this.userDataConnection = (HttpURLConnection) this.userRequestUrl.openConnection();
+            this.userDataConnection.setRequestMethod("POST");
+            this.userDataConnection.setRequestProperty("Content-Type", "application/json");
+            this.userDataConnection.setRequestProperty("Accept", "application/json");
+            this.userDataConnection.setDoOutput(true);
         }
-        this.userDataConnection.setRequestMethod("POST");
-        this.userDataConnection.setRequestProperty("Content-Type", "application/json");
-        this.userDataConnection.setRequestProperty("Accept", "application/json");
-        this.userDataConnection.setDoOutput(true);
+
         OutputStream os = this.userDataConnection.getOutputStream();
         byte[] input = usrRequestJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
         os.flush();
-//        os.close();
+        os.close();
 
         int responseCode = this.userDataConnection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK){
@@ -176,14 +181,12 @@ public class CloudConnection{
             }
             System.out.println(response);
             br.close();
-            os.close();
             return response.toString();
 
         }else{
             System.out.print(responseCode);
             Exception e = new Exception("The POST request for register account is failed.");
             e.printStackTrace();
-            os.close();
             return null;
         }
     }
@@ -192,11 +195,12 @@ public class CloudConnection{
         String usrRequestJson = Utils.toRegisterJson(username, pwd);
         if (this.userDataConnection == null){
             this.userDataConnection = (HttpURLConnection) this.userRequestUrl.openConnection();
+            this.userDataConnection.setRequestMethod("POST");
+            this.userDataConnection.setRequestProperty("Content-Type", "application/json");
+            this.userDataConnection.setRequestProperty("Accept", "application/json");
+            this.userDataConnection.setDoOutput(true);
         }
-        this.userDataConnection.setRequestMethod("POST");
-        this.userDataConnection.setRequestProperty("Content-Type", "application/json");
-        this.userDataConnection.setRequestProperty("Accept", "application/json");
-        this.userDataConnection.setDoOutput(true);
+
         OutputStream os = this.userDataConnection.getOutputStream();
         byte[] input = usrRequestJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
@@ -226,6 +230,10 @@ public class CloudConnection{
         if (this.sensorDataConnection!=null){
             this.sensorDataConnection.disconnect();
             this.sensorDataConnection = null;
+        }
+        if(this.userDataConnection!=null){
+            this.userDataConnection.disconnect();
+            this.userDataConnection = null;
         }
     }
 

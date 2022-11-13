@@ -1,9 +1,6 @@
 package com.specknet.pdiotapp
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -21,8 +18,10 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.google.android.gms.internal.zzhu.runOnUiThread
+import com.specknet.pdiotapp.cloudcomputing.CloudConnection
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.ThingyLiveData
+import java.nio.FloatBuffer
 
 
 /**
@@ -39,16 +38,21 @@ class ThingyFragment : Fragment() {
     var time = 0f
     lateinit var allThingyData: LineData
     lateinit var thingyChart: LineChart
-
+    private var predictUrl: String =  "https://pdiot-c.ew.r.appspot.com/inference"
+    private lateinit var ccon: CloudConnection
     // global broadcast receiver so we can unregister it
     lateinit var thingyLiveUpdateReceiver: BroadcastReceiver
     lateinit var looperThingy: Looper
+    lateinit var thingyInputWindow: FloatBuffer
     val filterTestThingy = IntentFilter(Constants.ACTION_THINGY_BROADCAST)
 
     lateinit var thingyAccel:TextView
     lateinit var thingyGyro:TextView
     lateinit var thingyMag:TextView
     lateinit var thingyText: TextView
+    lateinit var thr: Thread
+    lateinit var sharedPreferences: SharedPreferences
+    lateinit var username: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -67,8 +71,12 @@ class ThingyFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view,savedInstanceState)
         setupChart()
+        sharedPreferences = requireContext().getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
         val textMessage:String = String.format(resources.getString(R.string.movement_text),"Thingy","General Movement")
         thingyText.text = textMessage
+        thingyInputWindow = FloatBuffer.allocate(500)
+        var thingyCounter = 0
         thingyLiveUpdateReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
 
@@ -83,12 +91,41 @@ class ThingyFragment : Fragment() {
                     Log.d("Live", "onReceive: liveData = " + liveData)
                     updateThingyData(liveData)
                     // get all relevant intent contents
-                    val x = liveData.accelX
-                    val y = liveData.accelY
-                    val z = liveData.accelZ
+                    val accelX = liveData.accelX
+                    val accelY = liveData.accelY
+                    val accelZ = liveData.accelZ
+                    val gyroX = liveData.gyro.x
+                    val gyroY = liveData.gyro.y
+                    val gyroZ = liveData.gyro.z
+                    val magX = liveData.mag.x
+                    val magY = liveData.mag.y
+                    val magZ = liveData.mag.z
+                    var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ,magX,magY,magZ)
+                    thingyInputWindow.put(fA)
+                    if(thingyCounter >= 50){
+                        var rArray:FloatArray = thingyInputWindow.array().sliceArray(IntRange(0,449))
+                        ccon = CloudConnection.setUpServerConnection(predictUrl);
+                        var response:String = ""
+                        thr = Thread(Runnable {
+                            print(rArray)
+                            response = ccon.sendThingyDataPostRequest(username,rArray)
+                            Thread.sleep(500)
+                        })
+                        thr.start()
+                        ccon.disconnect()
+                        print("The action is"+response)
+                        runOnUiThread{
+                            while(response==""){}
+                            val textMessage:String = String.format(resources.getString(R.string.movement_text),"Respack",response)
+                            thingyText.text = textMessage}
+                        thingyCounter = 0
+                        thingyInputWindow.clear()
+                    }
+
 
                     time += 1
-                    updateGraph(x, y, z)
+                    thingyCounter += 1
+                    updateGraph(accelX,accelY,accelZ)
 
                 }
             }

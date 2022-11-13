@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 public class Utils {
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
-
     public static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
@@ -144,15 +143,15 @@ public class Utils {
         System.out.println(dataWindows.length);
 
         BothDevice bothDevice = new BothDevice(dataWindows);
-        System.out.println(bothDevice.device);
-        Gson gson = new Gson();
 
+        Gson gson = new Gson();
+        System.out.println(gson.toJson(bothDevice));
         return gson.toJson(bothDevice);
     }
 
 
 
-    public static String respeckWindowToJson(float[] respeckWindow) {
+    public static String respeckWindowToJson(String username, float[] respeckWindow) {
         assert respeckWindow != null;
         String device;
         if(respeckWindow.length == 300){
@@ -161,12 +160,12 @@ public class Utils {
         else{
             throw new IllegalArgumentException("The length of data window should be 300(50*6) for Respeck. ");
         }
-        deviceWindow dataWindowWithRespeck= new deviceWindow(device,respeckWindow);
+        deviceWindow dataWindowWithRespeck= new deviceWindow(username,device,respeckWindow);
         Gson gson = new Gson();
         return gson.toJson(dataWindowWithRespeck);
     }
 
-    public static String thingyWindowToJson(float[] thingyWindow) {
+    public static String thingyWindowToJson(String username, float[] thingyWindow) {
         assert thingyWindow != null;
         String device;
         if(thingyWindow.length == 450){
@@ -175,7 +174,7 @@ public class Utils {
         else{
             throw new IllegalArgumentException("The length of data window should be 450(50*9) for Thingy. ");
         }
-        deviceWindow dataWindowWithThingy= new deviceWindow(device,thingyWindow);
+        deviceWindow dataWindowWithThingy= new deviceWindow(username,device,thingyWindow);
         Gson gson = new Gson();
         return gson.toJson(dataWindowWithThingy);
     }
