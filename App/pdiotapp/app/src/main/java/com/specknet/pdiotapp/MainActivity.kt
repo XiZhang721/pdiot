@@ -1,6 +1,7 @@
 package com.specknet.pdiotapp
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -78,6 +79,9 @@ class MainActivity : AppCompatActivity() {
         passwordInput = findViewById(R.id.password_input)
         loginButton = findViewById(R.id.login_button)
         registerButton = findViewById(R.id.register_page_loader)
+        if(!isUserFirstTime){
+            usernameInput.setText(sharedPreferences.getString(Constants.USERNAME_PREF,""))
+        }
         hintText.text = ""
         passwordInput.transformationMethod = PasswordTransformationMethod.getInstance()
 
@@ -102,10 +106,15 @@ class MainActivity : AppCompatActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
+    @SuppressLint("CommitPrefEdits")
     private fun setupClickListeners() {
         loginButton.setOnClickListener {
-            var isLoginSuccess = loginCheck(usernameInput.text.toString(),passwordInput.text.toString())
+            var usernameText = usernameInput.text.toString()
+
+            var isLoginSuccess = loginCheck(usernameText,passwordInput.text.toString())
             if(isLoginSuccess){
+                var sharedPreferences = getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+                sharedPreferences.edit().putString(Constants.USERNAME_PREF,usernameText).apply()
                 val intent = Intent(this, MainConnectActivity::class.java)
                 startActivity(intent)
             }else{

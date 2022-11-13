@@ -43,7 +43,14 @@ class MainConnectActivity: AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_connect_main)
 
+
+        layoutManager = LinearLayoutManager(this)
+        recycleView.layoutManager = layoutManager
+        adapter = RecyclerAdapter(this,respeckOn ,thingyOn)
+        recycleView.adapter = adapter
         var mainContext: Context = this
+        
+
         respeckReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val action = intent.action
@@ -79,10 +86,7 @@ class MainConnectActivity: AppCompatActivity(){
         this.registerReceiver(thingyReceiver, filterTestThingy, null, handlerThingy)
 
 
-        layoutManager = LinearLayoutManager(this)
-        recycleView.layoutManager = layoutManager
-        adapter = RecyclerAdapter(this,respeckOn ,thingyOn)
-        recycleView.adapter = adapter
+
         var bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.connection
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->

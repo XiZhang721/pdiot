@@ -1,11 +1,13 @@
 package com.specknet.pdiotapp
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.github.mikephil.charting.animation.Easing
@@ -18,6 +20,7 @@ import com.github.mikephil.charting.utils.MPPointF
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
 import com.specknet.pdiotapp.live.LiveDataActivity
+import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.Utils
 import kotlinx.android.synthetic.main.fragment_on_boarding.view.*
 
@@ -41,6 +44,7 @@ class UserActivity: AppCompatActivity() {
     private val testTime = listOf(0,0,10,0,0,100,0,0,40,500,20,200,0,0)
     lateinit var logoutButton: Button
     lateinit var recordButton: Button
+    lateinit var userName: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +52,10 @@ class UserActivity: AppCompatActivity() {
 
         logoutButton = findViewById(R.id.logout_button)
         recordButton = findViewById(R.id.record_button)
+
+        userName = findViewById(R.id.username_text)
+        var sharedPreferences =  getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        userName.text = sharedPreferences.getString(Constants.USERNAME_PREF,"")
 
         setupButtons()
         configChartView()

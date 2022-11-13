@@ -17,7 +17,7 @@
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/activity_barcode.xml" value="0.3532608695652174" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/activity_connect_main.xml" value="0.2" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/activity_connecting.xml" value="0.2" />
-        <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/activity_live_data.xml" value="0.176" />
+        <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/activity_live_data.xml" value="0.2" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/activity_on_boarding.xml" value="0.265625" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/activity_recording.xml" value="0.265625" />
@@ -25,8 +25,13 @@
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/activity_user.xml" value="0.16" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/card_layout.xml" value="0.2" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/fragment_on_boarding.xml" value="0.3532608695652174" />
+        <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/fragment_respeck.xml" value="0.264" />
+        <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/fragment_thingy.xml" value="0.20989583333333334" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/list_row_group.xml" value="0.29739583333333336" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/list_row_member.xml" value="0.29739583333333336" />
+        <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/respeck_page.xml" value="0.22447916666666667" />
+        <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/sensor_page.xml" value="0.2" />
+        <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/layout/thingy_page.xml" value="0.22447916666666667" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/menu/menu_main.xml" value="0.36614583333333334" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/menu/menu_navigation.xml" value="0.265625" />
         <entry key="..\:/Users/25792/Desktop/pdiot/App/pdiotapp/app/src/main/res/menu/menu_pager.xml" value="0.36614583333333334" />
