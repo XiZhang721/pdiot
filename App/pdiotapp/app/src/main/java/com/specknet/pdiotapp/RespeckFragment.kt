@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -21,9 +22,11 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.google.android.gms.internal.zzhu.runOnUiThread
+import com.specknet.pdiotapp.cloudcomputing.CloudConnection
 import com.specknet.pdiotapp.ml.RespeckModel
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.RESpeckLiveData
+import com.specknet.pdiotapp.utils.Utils
 import kotlinx.android.synthetic.main.activity_live_data.*
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
@@ -45,6 +48,8 @@ class RespeckFragment : Fragment() {
     var time = 0f
     lateinit var allRespeckData: LineData
     lateinit var respeckChart: LineChart
+    private var predictUrl: String =  "https://pdiot-c.ew.r.appspot.com/inference"
+    private lateinit var ccon: CloudConnection
 
     val filterTestRespeck = IntentFilter(Constants.ACTION_RESPECK_LIVE_BROADCAST)
     lateinit var respeckModel: RespeckModel
@@ -57,7 +62,11 @@ class RespeckFragment : Fragment() {
 
     lateinit var respeckText: TextView
 
-    var respeckNeedUpdate:Boolean = false
+    lateinit var thr: Thread
+    lateinit var sharedPreferences: SharedPreferences
+    lateinit var username: String
+//    var respeckNeedUpdate:Boolean = false
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -76,10 +85,13 @@ class RespeckFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupChart()
+        sharedPreferences = requireContext().getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
+
         respeckModel = RespeckModel.newInstance(requireContext())
         var respeckCounter =0
         respeckMovment = resources.getStringArray(R.array.activity_follow_model_order)[13]
-        respeckNeedUpdate = true
+//        respeckNeedUpdate = true
         respeckInputWindow = FloatBuffer.allocate(500);
 
         val textMessage:String = String.format(resources.getString(R.string.movement_text),"Respack","General Movement")
@@ -110,15 +122,25 @@ class RespeckFragment : Fragment() {
                     respeckInputWindow.put(fA)
                     if(respeckCounter >= 50){
                         var rArray:FloatArray = respeckInputWindow.array().sliceArray(IntRange(0,299))
-
+                        ccon = CloudConnection.setUpServerConnection(predictUrl);
+                        var response:String = ""
+                        thr = Thread(Runnable {
+                            print(rArray)
+                            response = ccon.sendRespeckDataPostRequest(username,rArray)
+                            Thread.sleep(500)
+                        })
+                        thr.start()
+                        ccon.disconnect()
+                        print("The action is"+response)
                         println("size: aaa  "+rArray.size)
-                        val input = TensorBuffer.createFixedSize(intArrayOf(1, 50, 6), DataType.FLOAT32)
-                        input.loadArray(rArray)
-                        val outputs = respeckModel.process(input)
-                        val output = outputs.outputFeature0AsTensorBuffer.floatArray
-                        var tempRespeckMovment = chooseBest(output)
+//                        val input = TensorBuffer.createFixedSize(intArrayOf(1, 50, 6), DataType.FLOAT32)
+//                        input.loadArray(rArray)
+//                        val outputs = respeckModel.process(input)
+//                        val output = outputs.outputFeature0AsTensorBuffer.floatArray
+//                        var tempRespeckMovment = chooseBest(output)
                         runOnUiThread{
-                            val textMessage:String = String.format(resources.getString(R.string.movement_text),"Respack",tempRespeckMovment)
+                            while(response==""){}
+                            val textMessage:String = String.format(resources.getString(R.string.movement_text),"Respack",response)
                             respeckText.text = textMessage}
                         respeckCounter = 0
                         respeckInputWindow.clear()
@@ -144,6 +166,7 @@ class RespeckFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         requireContext().unregisterReceiver(respeckLiveUpdateReceiver)
+        thr.interrupt()
         respeckModel.close()
         looperRespeck.quit()
     }
