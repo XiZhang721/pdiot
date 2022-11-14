@@ -39,7 +39,7 @@ class ExampleUnitTest {
 
     @Test
     fun login_Correct(){
-        var userRuestUrl = "https://pdiot-c.ew.r.appspot.com/"
+        var userRuestUrl = "https://pdiot-c.ew.r.appspot.com/login"
         var ccon = CloudConnection.setUpUserDataConnection(userRuestUrl)
         var response = ccon.sendLoginPostRequest("aka","123456")
         print(response)

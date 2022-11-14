@@ -1,16 +1,16 @@
 package com.specknet.pdiotapp
 
 import android.content.*
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
@@ -18,19 +18,17 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.google.android.gms.internal.zzhu
+import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
 import com.specknet.pdiotapp.cloudcomputing.CloudConnection
+import com.specknet.pdiotapp.live.LiveDataActivity
 import com.specknet.pdiotapp.ml.RespeckModel
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.RESpeckLiveData
 import com.specknet.pdiotapp.utils.ThingyLiveData
+import com.specknet.pdiotapp.utils.Utils
 import java.nio.FloatBuffer
 
-/**
- * A simple [Fragment] subclass.
- * Use the [BothFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class BothFragment : Fragment() {
+class BothActivity : AppCompatActivity() {
     private lateinit var respeckLiveUpdateReceiver: BroadcastReceiver
 
 
@@ -70,42 +68,35 @@ class BothFragment : Fragment() {
     lateinit var thingyInputWindow: FloatBuffer
     val filterTestThingy = IntentFilter(Constants.ACTION_THINGY_BROADCAST)
 
-    lateinit var thingyAccel:TextView
-    lateinit var thingyGyro:TextView
-    lateinit var thingyMag:TextView
-    lateinit var thingyText: TextView
+    lateinit var thingyAccel: TextView
+    lateinit var thingyGyro: TextView
+    lateinit var thingyMag: TextView
 
     var respeckReady = false
     var thingyReady = false
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        var both: View = inflater.inflate(R.layout.fragment_respeck, container, false)
-        respeckAccel = both.findViewById(R.id.both_respeck_accel)
-        respeckGyro = both.findViewById(R.id.both_respeck_gyro)
-        thingyAccel = both.findViewById(R.id.both_thingy_accel)
-        thingyGyro = both.findViewById(R.id.both_thingy_gyro)
-        thingyMag = both.findViewById(R.id.both_thingy_mag)
-        bothText = both.findViewById(R.id.both_text)
-        chart = both.findViewById(R.id.both_chart)
-        // Inflate the layout for this fragment
-        return both
-    }
+    lateinit var exitButton: ImageButton
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_both)
 
-        setupChart()
-        sharedPreferences = requireContext().getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        respeckAccel = findViewById(R.id.both_respeck_accel)
+        respeckGyro = findViewById(R.id.both_respeck_gyro)
+        thingyAccel = findViewById(R.id.both_thingy_accel)
+        thingyGyro = findViewById(R.id.both_thingy_gyro)
+        thingyMag = findViewById(R.id.both_thingy_mag)
+        bothText = findViewById(R.id.both_text)
+        chart = findViewById(R.id.both_chart)
+        sharedPreferences = getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
 
-        respeckModel = RespeckModel.newInstance(requireContext())
+        setupChart()
         var respeckCounter =0
         respeckMovment = resources.getStringArray(R.array.activity_follow_model_order)[13]
 //        respeckNeedUpdate = true
         respeckInputWindow = FloatBuffer.allocate(500);
-
+        thingyInputWindow = FloatBuffer.allocate(500)
+        var thingyCounter = 0
         var textMessage:String = String.format(resources.getString(R.string.movement_both_text),"General Movement")
         bothText.text = textMessage
 
@@ -133,66 +124,56 @@ class BothFragment : Fragment() {
                     var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ)
                     if(!respeckReady){
                         respeckInputWindow.put(fA)
+                        respeckCounter+=1
                         if(respeckCounter >= 50){
                             respeckReady = true
                         }
                     }
                     if(respeckReady && thingyReady){
-
                         //merge two input windows and send, copy and paste on the thingy part.
-
-
                         var rArray:FloatArray = respeckInputWindow.array().sliceArray(IntRange(0,299))
+                        var tArray:FloatArray = thingyInputWindow.array().sliceArray(IntRange(0,449))
                         ccon = CloudConnection.setUpServerConnection(predictUrl);
                         var response:String = ""
                         thr = Thread(Runnable {
                             print(rArray)
-                            response = ccon.sendRespeckDataPostRequest(username,rArray)
+                            response = ccon.sendTwoSensorDataPostRequest(username,rArray,tArray)
                             Thread.sleep(500)
                         })
                         thr.start()
                         ccon.disconnect()
                         print("The action is"+response)
                         println("size: aaa  "+rArray.size)
-//                        val input = TensorBuffer.createFixedSize(intArrayOf(1, 50, 6), DataType.FLOAT32)
-//                        input.loadArray(rArray)
-//                        val outputs = respeckModel.process(input)
-//                        val output = outputs.outputFeature0AsTensorBuffer.floatArray
-//                        var tempRespeckMovment = chooseBest(output)
                         zzhu.runOnUiThread {
-                            while (response == "") {
-                            }
+                            while (response == "") {}
                             val textMessage: String = String.format(
-                                resources.getString(R.string.movement_text),
-                                "Respack",
+                                resources.getString(R.string.movement_both_text),
                                 response
                             )
                             bothText.text = textMessage
                         }
                         respeckCounter = 0
+                        thingyCounter = 0
                         respeckInputWindow.clear()
-
+                        thingyInputWindow.clear()
+                        respeckReady = false
+                        thingyReady = false
                     }
-                    respeckCounter+=1
-
-                    time += 1
+                    time += 0.5f
                     updateRespeckGraph(accelX, accelY, accelZ)
-                    respeckReady = false
-                    thingyReady = false
+
 
                 }
             }
         }
 
         // register receiver on another thread
-        val handlerThreadRespeck = HandlerThread("bgThreadRespeckLive")
+        val handlerThreadRespeck = HandlerThread("bgThreadRespeckLive2")
         handlerThreadRespeck.start()
         looperRespeck = handlerThreadRespeck.looper
         val handlerRespeck = Handler(looperRespeck)
-        requireContext().registerReceiver(respeckLiveUpdateReceiver, filterTestRespeck, null, handlerRespeck)
-        thingyText.text = textMessage
-        thingyInputWindow = FloatBuffer.allocate(500)
-        var thingyCounter = 0
+        registerReceiver(respeckLiveUpdateReceiver, filterTestRespeck, null, handlerRespeck)
+
         thingyLiveUpdateReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
 
@@ -219,61 +200,33 @@ class BothFragment : Fragment() {
                     var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ,magX,magY,magZ)
                     if(!thingyReady){
                         thingyInputWindow.put(fA)
+                        thingyCounter += 1
                         if(thingyCounter >= 50){
                             thingyReady = true
                         }
                     }
-                    if(respeckReady && thingyReady){
-                        var rArray:FloatArray = thingyInputWindow.array().sliceArray(IntRange(0,449))
-                        ccon = CloudConnection.setUpServerConnection(predictUrl);
-                        var response:String = ""
-                        thr = Thread(Runnable {
-                            print(rArray)
-                            response = ccon.sendThingyDataPostRequest(username,rArray)
-                            Thread.sleep(500)
-                        })
-                        thr.start()
-                        ccon.disconnect()
-                        print("The action is"+response)
-                        zzhu.runOnUiThread {
-                            while (response == "") {
-                            }
-                            val textMessage: String = String.format(
-                                resources.getString(R.string.movement_text),
-                                "Respack",
-                                response
-                            )
-                            thingyText.text = textMessage
-                        }
-                        thingyCounter = 0
-                        thingyInputWindow.clear()
-                    }
-
-
-                    time += 1
-                    thingyCounter += 1
+                    time += 0.5f
                     updateThingyGraph(accelX,accelY,accelZ)
-                    respeckReady = false
-                    thingyReady = false
+
                 }
             }
         }
 
         // register receiver on another thread
-        val handlerThreadThingy = HandlerThread("bgThreadThingyLive")
+        val handlerThreadThingy = HandlerThread("bgThreadThingyLive2")
         handlerThreadThingy.start()
         looperThingy = handlerThreadThingy.looper
         val handlerThingy = Handler(looperThingy)
-        requireContext().registerReceiver(thingyLiveUpdateReceiver, filterTestThingy, null, handlerThingy)
+        registerReceiver(thingyLiveUpdateReceiver, filterTestThingy, null, handlerThingy)
+
+        exitButton = findViewById(R.id.exit_button)
+        exitButton.setOnClickListener {
+            val intent = Intent(this, LiveDataActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        requireContext().unregisterReceiver(respeckLiveUpdateReceiver)
-        thr.interrupt()
-        respeckModel.close()
-        looperRespeck.quit()
-    }
 
     private fun updateRespeckData(liveData: RESpeckLiveData) {
         zzhu.runOnUiThread {
@@ -283,13 +236,6 @@ class BothFragment : Fragment() {
                 getString(R.string.both_respeck_gyro, liveData.gyro.x, liveData.gyro.y, liveData.gyro.z)
         }
     }
-
-    fun chooseBest(arr: FloatArray):String{
-
-        var x = arr.indexOfFirst { it == arr.maxOrNull()!! }  // change name x to index
-        return resources.getStringArray(R.array.activity_follow_model_order)[x];
-    }
-
     fun updateRespeckGraph(x: Float, y: Float, z: Float) {
         // take the first element from the queue
         // and update the graph with it
@@ -332,7 +278,7 @@ class BothFragment : Fragment() {
         }
     }
 
-    fun setupChart() {
+    private fun setupChart() {
 
         // Respeck
 
@@ -363,38 +309,38 @@ class BothFragment : Fragment() {
 
         dataSet_res_accel_x.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.red
             )
         )
         dataSet_res_accel_y.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.green
             )
         )
         dataSet_res_accel_z.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.blue
             )
         )
 
         dataSet_thingy_accel_x.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.yellow
             )
         )
         dataSet_thingy_accel_y.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.orange
             )
         )
         dataSet_thingy_accel_z.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.purple
             )
         )
@@ -409,6 +355,18 @@ class BothFragment : Fragment() {
 
         allData = LineData(dataSets)
         chart.data = allData
+        chart.legend.isWordWrapEnabled = true
         chart.invalidate()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(respeckLiveUpdateReceiver)
+        unregisterReceiver(thingyLiveUpdateReceiver)
+        thr.interrupt()
+        ccon.disconnect()
+        respeckModel.close()
+        looperThingy.quit()
+        looperRespeck.quit()
     }
 }

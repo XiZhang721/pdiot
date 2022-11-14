@@ -1,36 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".RespeckFragment">
-
+    tools:context=".ThingyActivity">
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <ImageButton
+            android:id="@+id/exit_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="20dp"
+            android:background="@drawable/circle_button"
+            android:layout_marginTop="15dp"
+            android:src="@mipmap/back_icon"
+            android:backgroundTint="@color/button_icon_dark"
+            android:tint="#ffffff"
+            android:scaleType="centerCrop"
+            android:padding="5dp"/>
         <LinearLayout
-            android:id="@+id/respeck_graph"
+            android:id="@+id/thingy_graph"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintBottom_toTopOf="@id/respeck_live_data"
+            app:layout_constraintBottom_toTopOf="@id/thingy_live_data"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@id/exit_button"
             app:layout_constraintVertical_bias="0.5">
 
             <TextView
-                android:id="@+id/respeck_chart_title"
+                android:id="@+id/thingy_chart_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Respeck Live Data"
+                android:text="Thingy Live Data"
                 android:textSize="25sp"
                 android:textStyle="bold"
                 android:paddingStart="25dp"/>
 
             <com.github.mikephil.charting.charts.LineChart
-                android:id="@+id/respeck_chart"
+                android:id="@+id/thingy_chart"
                 android:layout_width="match_parent"
                 android:layout_height="240dp"
                 android:layout_marginTop="20dp"
@@ -38,12 +52,12 @@
 
         </LinearLayout>
         <LinearLayout
-            android:id="@+id/respeck_live_data"
+            android:id="@+id/thingy_live_data"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintTop_toBottomOf="@id/respeck_graph"
-            app:layout_constraintBottom_toTopOf="@id/respeck_text"
+            app:layout_constraintTop_toBottomOf="@id/thingy_graph"
+            app:layout_constraintBottom_toTopOf="@id/thingy_text"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:paddingStart="20dp"
@@ -52,7 +66,7 @@
 
 
             <TextView
-                android:id="@+id/respeck_accel"
+                android:id="@+id/thingy_accel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
@@ -61,31 +75,36 @@
                 />
 
             <TextView
-                android:id="@+id/respeck_gyro"
+                android:id="@+id/thingy_gyro"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:text="Gyro = "
                 android:textSize="15sp"/>
 
-
+            <TextView
+                android:id="@+id/thingy_mag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:text="Mag = "
+                android:textSize="15sp"/>
         </LinearLayout>
 
         <TextView
-            android:id="@+id/respeck_text"
+            android:id="@+id/thingy_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/respeck_live_data"
+            app:layout_constraintTop_toBottomOf="@id/thingy_live_data"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
             android:textSize="20dp"
-            android:text="Based on your Respeck data, your current possible movement is: " />
+            android:text="Based on your Thingy data, your current possible movement is: " />
 
 
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

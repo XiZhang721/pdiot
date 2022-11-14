@@ -1,36 +1,32 @@
 package com.specknet.pdiotapp
 
 import android.content.*
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.google.android.gms.internal.zzhu.runOnUiThread
+import com.google.android.gms.internal.zzhu
+import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
 import com.specknet.pdiotapp.cloudcomputing.CloudConnection
+import com.specknet.pdiotapp.live.LiveDataActivity
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.ThingyLiveData
+import com.specknet.pdiotapp.utils.Utils
 import java.nio.FloatBuffer
 
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ThingyFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class ThingyFragment : Fragment() {
-    // global graph variables
+class ThingyActivity : AppCompatActivity() {
     lateinit var dataSet_thingy_accel_x: LineDataSet
     lateinit var dataSet_thingy_accel_y: LineDataSet
     lateinit var dataSet_thingy_accel_z: LineDataSet
@@ -46,32 +42,29 @@ class ThingyFragment : Fragment() {
     lateinit var thingyInputWindow: FloatBuffer
     val filterTestThingy = IntentFilter(Constants.ACTION_THINGY_BROADCAST)
 
-    lateinit var thingyAccel:TextView
-    lateinit var thingyGyro:TextView
-    lateinit var thingyMag:TextView
+    lateinit var thingyAccel: TextView
+    lateinit var thingyGyro: TextView
+    lateinit var thingyMag: TextView
     lateinit var thingyText: TextView
     lateinit var thr: Thread
     lateinit var sharedPreferences: SharedPreferences
     lateinit var username: String
+    var dataReady = false
+    lateinit var exitButton: ImageButton
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        var thingy: View = inflater.inflate(R.layout.fragment_thingy, container, false)
-        thingyAccel = thingy.findViewById(R.id.thingy_accel)
-        thingyGyro = thingy.findViewById(R.id.thingy_gyro)
-        thingyMag = thingy.findViewById(R.id.thingy_mag)
-        thingyChart = thingy.findViewById(R.id.thingy_chart)
-        thingyText = thingy.findViewById(R.id.thingy_text)
-        // Inflate the layout for this fragment
-        return thingy
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view,savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_thingy)
+
+        thingyAccel = findViewById(R.id.thingy_accel)
+        thingyGyro = findViewById(R.id.thingy_gyro)
+        thingyMag = findViewById(R.id.thingy_mag)
+        thingyChart = findViewById(R.id.thingy_chart)
+        thingyText = findViewById(R.id.thingy_text)
+
         setupChart()
-        sharedPreferences = requireContext().getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        sharedPreferences = this.getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
         val textMessage:String = String.format(resources.getString(R.string.movement_text),"Thingy","General Movement")
         thingyText.text = textMessage
@@ -101,8 +94,16 @@ class ThingyFragment : Fragment() {
                     val magY = liveData.mag.y
                     val magZ = liveData.mag.z
                     var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ,magX,magY,magZ)
-                    thingyInputWindow.put(fA)
-                    if(thingyCounter >= 50){
+                    if(!dataReady){
+                        thingyInputWindow.put(fA)
+                        thingyCounter += 1
+                        if(thingyCounter >= 50){
+                            dataReady = true
+                        }
+                    }
+
+                    if(dataReady){
+
                         var rArray:FloatArray = thingyInputWindow.array().sliceArray(IntRange(0,449))
                         ccon = CloudConnection.setUpServerConnection(predictUrl);
                         var response:String = ""
@@ -112,19 +113,24 @@ class ThingyFragment : Fragment() {
                             Thread.sleep(500)
                         })
                         thr.start()
+                        while (response==""){}
                         ccon.disconnect()
                         print("The action is"+response)
-                        runOnUiThread{
-                            while(response==""){}
-                            val textMessage:String = String.format(resources.getString(R.string.movement_text),"Respack",response)
-                            thingyText.text = textMessage}
+                        zzhu.runOnUiThread {
+                            while (response == "") {
+                            }
+                            val textMessage: String = String.format(
+                                resources.getString(R.string.movement_text),
+                                "Thingy",
+                                response
+                            )
+                            thingyText.text = textMessage
+                        }
                         thingyCounter = 0
                         thingyInputWindow.clear()
+                        dataReady = false
                     }
-
-
                     time += 1
-                    thingyCounter += 1
                     updateGraph(accelX,accelY,accelZ)
 
                 }
@@ -136,7 +142,18 @@ class ThingyFragment : Fragment() {
         handlerThreadThingy.start()
         looperThingy = handlerThreadThingy.looper
         val handlerThingy = Handler(looperThingy)
-        requireContext().registerReceiver(thingyLiveUpdateReceiver, filterTestThingy, null, handlerThingy)
+        registerReceiver(thingyLiveUpdateReceiver, filterTestThingy, null, handlerThingy)
+
+        exitButton = findViewById(R.id.exit_button)
+        exitButton.setOnClickListener {
+            unregisterReceiver(thingyLiveUpdateReceiver)
+            thr.interrupt()
+            ccon.disconnect()
+            looperThingy.quit()
+            val intent = Intent(this, LiveDataActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun updateGraph(x: Float, y: Float, z: Float) {
@@ -144,7 +161,7 @@ class ThingyFragment : Fragment() {
         dataSet_thingy_accel_y.addEntry(Entry(time, y))
         dataSet_thingy_accel_z.addEntry(Entry(time, z))
 
-        runOnUiThread {
+        zzhu.runOnUiThread {
             allThingyData.notifyDataChanged()
             thingyChart.notifyDataSetChanged()
             thingyChart.invalidate()
@@ -155,10 +172,13 @@ class ThingyFragment : Fragment() {
 
     private fun updateThingyData(liveData: ThingyLiveData) {
         // update UI thread
-        runOnUiThread {
-            thingyAccel.text = getString(R.string.thingy_accel, liveData.accelX, liveData.accelY, liveData.accelZ)
-            thingyGyro.text = getString(R.string.thingy_gyro, liveData.gyro.x, liveData.gyro.y, liveData.gyro.z)
-            thingyMag.text = getString(R.string.thingy_mag, liveData.mag.x, liveData.mag.y, liveData.mag.z)
+        zzhu.runOnUiThread {
+            thingyAccel.text =
+                getString(R.string.thingy_accel, liveData.accelX, liveData.accelY, liveData.accelZ)
+            thingyGyro.text =
+                getString(R.string.thingy_gyro, liveData.gyro.x, liveData.gyro.y, liveData.gyro.z)
+            thingyMag.text =
+                getString(R.string.thingy_mag, liveData.mag.x, liveData.mag.y, liveData.mag.z)
         }
     }
 
@@ -180,19 +200,19 @@ class ThingyFragment : Fragment() {
 
         dataSet_thingy_accel_x.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.red
             )
         )
         dataSet_thingy_accel_y.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.green
             )
         )
         dataSet_thingy_accel_z.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.blue
             )
         )
@@ -207,10 +227,7 @@ class ThingyFragment : Fragment() {
         thingyChart.invalidate()
     }
 
-
     override fun onDestroy() {
         super.onDestroy()
-        requireContext().unregisterReceiver(thingyLiveUpdateReceiver)
-        looperThingy.quit()
     }
 }

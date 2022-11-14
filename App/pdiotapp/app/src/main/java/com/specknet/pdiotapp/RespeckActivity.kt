@@ -1,43 +1,34 @@
 package com.specknet.pdiotapp
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.SharedPreferences
+import android.content.*
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.google.android.gms.internal.zzhu.runOnUiThread
+import com.google.android.gms.internal.zzhu
+import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
 import com.specknet.pdiotapp.cloudcomputing.CloudConnection
+import com.specknet.pdiotapp.live.LiveDataActivity
 import com.specknet.pdiotapp.ml.RespeckModel
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.RESpeckLiveData
 import com.specknet.pdiotapp.utils.Utils
-import kotlinx.android.synthetic.main.activity_live_data.*
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.nio.FloatBuffer
 
-/**
- * A simple [Fragment] subclass.
- * Use the [RespeckFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class RespeckFragment : Fragment() {
+class RespeckActivity : AppCompatActivity() {
+
     private lateinit var respeckLiveUpdateReceiver: BroadcastReceiver
 
 
@@ -65,30 +56,25 @@ class RespeckFragment : Fragment() {
     lateinit var thr: Thread
     lateinit var sharedPreferences: SharedPreferences
     lateinit var username: String
-//    var respeckNeedUpdate:Boolean = false
+
+    lateinit var exitButton: ImageButton
+    var dataReady = false
 
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        var respeck: View = inflater.inflate(R.layout.fragment_respeck, container, false)
-        respeckAccel = respeck.findViewById(R.id.respeck_accel)
-        respeckGyro = respeck.findViewById(R.id.respeck_gyro)
-        respeckText = respeck.findViewById(R.id.respeck_text)
-        respeckChart = respeck.findViewById(R.id.respeck_chart)
-        // Inflate the layout for this fragment
-        return respeck
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_respeck)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        respeckAccel = findViewById(R.id.respeck_accel)
+        respeckGyro = findViewById(R.id.respeck_gyro)
+        respeckText = findViewById(R.id.respeck_text)
+        respeckChart = findViewById(R.id.respeck_chart)
 
         setupChart()
-        sharedPreferences = requireContext().getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        sharedPreferences = this.getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
 
-        respeckModel = RespeckModel.newInstance(requireContext())
+        respeckModel = RespeckModel.newInstance(this)
         var respeckCounter =0
         respeckMovment = resources.getStringArray(R.array.activity_follow_model_order)[13]
 //        respeckNeedUpdate = true
@@ -119,17 +105,24 @@ class RespeckFragment : Fragment() {
                     var gyroY = liveData.gyro.y
                     var gyroZ = liveData.gyro.z
                     var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ)
-                    respeckInputWindow.put(fA)
-                    if(respeckCounter >= 50){
+                    if(!dataReady){
+                        respeckInputWindow.put(fA)
+                        respeckCounter += 1
+                        if(respeckCounter >= 50){
+                            dataReady = true
+                        }
+                    }
+                    if(dataReady){
                         var rArray:FloatArray = respeckInputWindow.array().sliceArray(IntRange(0,299))
                         ccon = CloudConnection.setUpServerConnection(predictUrl);
                         var response:String = ""
                         thr = Thread(Runnable {
-                            print(rArray)
+                            //print(rArray)
                             response = ccon.sendRespeckDataPostRequest(username,rArray)
                             Thread.sleep(500)
                         })
                         thr.start()
+                        while (response==""){}
                         ccon.disconnect()
                         print("The action is"+response)
                         println("size: aaa  "+rArray.size)
@@ -138,15 +131,20 @@ class RespeckFragment : Fragment() {
 //                        val outputs = respeckModel.process(input)
 //                        val output = outputs.outputFeature0AsTensorBuffer.floatArray
 //                        var tempRespeckMovment = chooseBest(output)
-                        runOnUiThread{
-                            while(response==""){}
-                            val textMessage:String = String.format(resources.getString(R.string.movement_text),"Respack",response)
-                            respeckText.text = textMessage}
+                        zzhu.runOnUiThread {
+                            while (response == "") {
+                            }
+                            val textMessage: String = String.format(
+                                resources.getString(R.string.movement_text),
+                                "Respack",
+                                response
+                            )
+                            respeckText.text = textMessage
+                        }
                         respeckCounter = 0
                         respeckInputWindow.clear()
-
+                        dataReady = false
                     }
-                    respeckCounter+=1
 
                     time += 1
                     updateGraph(accelX, accelY, accelZ)
@@ -155,34 +153,37 @@ class RespeckFragment : Fragment() {
             }
         }
 
+
         // register receiver on another thread
         val handlerThreadRespeck = HandlerThread("bgThreadRespeckLive")
         handlerThreadRespeck.start()
         looperRespeck = handlerThreadRespeck.looper
         val handlerRespeck = Handler(looperRespeck)
-        requireContext().registerReceiver(respeckLiveUpdateReceiver, filterTestRespeck, null, handlerRespeck)
-    }
+        registerReceiver(respeckLiveUpdateReceiver, filterTestRespeck, null, handlerRespeck)
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        requireContext().unregisterReceiver(respeckLiveUpdateReceiver)
-        thr.interrupt()
-        respeckModel.close()
-        looperRespeck.quit()
-    }
-
-    private fun updateRespeckData(liveData: RESpeckLiveData) {
-        runOnUiThread {
-            respeckAccel.text = getString(R.string.respeck_accel, liveData.accelX, liveData.accelY, liveData.accelZ)
-            respeckGyro.text = getString(R.string.respeck_gyro, liveData.gyro.x, liveData.gyro.y, liveData.gyro.z)
+        exitButton = findViewById(R.id.exit_button)
+        exitButton.setOnClickListener {
+            unregisterReceiver(respeckLiveUpdateReceiver)
+            thr.interrupt()
+            ccon.disconnect()
+            respeckModel.close()
+            looperRespeck.quit()
+            val intent = Intent(this, LiveDataActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 
-//    fun chooseBest(arr: FloatArray):String{
-//
-//        var x = arr.indexOfFirst { it == arr.maxOrNull()!! }  // change name x to index
-//        return resources.getStringArray(R.array.activity_follow_model_order)[x];
-//    }
+
+    private fun updateRespeckData(liveData: RESpeckLiveData) {
+        zzhu.runOnUiThread {
+            respeckAccel.text =
+                getString(R.string.respeck_accel, liveData.accelX, liveData.accelY, liveData.accelZ)
+            respeckGyro.text =
+                getString(R.string.respeck_gyro, liveData.gyro.x, liveData.gyro.y, liveData.gyro.z)
+        }
+    }
+
 
     fun updateGraph(x: Float, y: Float, z: Float) {
         // take the first element from the queue
@@ -191,7 +192,7 @@ class RespeckFragment : Fragment() {
         dataSet_res_accel_y.addEntry(Entry(time, y))
         dataSet_res_accel_z.addEntry(Entry(time, z))
 
-        runOnUiThread {
+        zzhu.runOnUiThread {
             allRespeckData.notifyDataChanged()
             respeckChart.notifyDataSetChanged()
             respeckChart.invalidate()
@@ -219,19 +220,19 @@ class RespeckFragment : Fragment() {
 
         dataSet_res_accel_x.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.red
             )
         )
         dataSet_res_accel_y.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.green
             )
         )
         dataSet_res_accel_z.setColor(
             ContextCompat.getColor(
-                requireContext(),
+                this,
                 R.color.blue
             )
         )
@@ -246,6 +247,7 @@ class RespeckFragment : Fragment() {
         respeckChart.invalidate()
     }
 
-
-
+    override fun onDestroy() {
+        super.onDestroy()
+    }
 }
