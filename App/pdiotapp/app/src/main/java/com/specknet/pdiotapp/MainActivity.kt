@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity() {
             ccon =  CloudConnection.setUpUserDataConnection(loginUrl)
             var response:String = "";
             var thr=Thread(Runnable{
-                response = ccon.sendRegisterPostRequest(username, password)
+                response = ccon.sendLoginPostRequest(username, password)
 
             })
             thr.start()

@@ -1,357 +1,135 @@
 package com.specknet.pdiotapp.live
 
-import android.content.*
-import android.content.res.Resources
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
-import androidx.core.content.ContextCompat
-import androidx.viewpager2.widget.ViewPager2
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
 import com.specknet.pdiotapp.*
-import com.specknet.pdiotapp.ml.RespeckModel
-import com.specknet.pdiotapp.utils.Constants
-import com.specknet.pdiotapp.utils.RESpeckLiveData
-import com.specknet.pdiotapp.utils.ThingyLiveData
-import kotlinx.android.synthetic.main.activity_live_data.*
-import org.tensorflow.lite.DataType
-import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
-import java.nio.FloatBuffer
-import kotlin.collections.ArrayList
+import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
+import com.specknet.pdiotapp.utils.Utils
 
 
 class LiveDataActivity : AppCompatActivity() {
 
     // global graph variables
-    lateinit var dataSet_res_accel_x: LineDataSet
-    lateinit var dataSet_res_accel_y: LineDataSet
-    lateinit var dataSet_res_accel_z: LineDataSet
-
-    lateinit var dataSet_thingy_accel_x: LineDataSet
-    lateinit var dataSet_thingy_accel_y: LineDataSet
-    lateinit var dataSet_thingy_accel_z: LineDataSet
-
-    var time = 0f
-    lateinit var allRespeckData: LineData
-
-    lateinit var allThingyData: LineData
-    lateinit var respeckChart: LineChart
-    lateinit var thingyChart: LineChart
-
-    // global broadcast receiver so we can unregister it
-    lateinit var respeckLiveUpdateReceiver: BroadcastReceiver
-    lateinit var thingyLiveUpdateReceiver: BroadcastReceiver
-    lateinit var looperRespeck: Looper
-    lateinit var looperThingy: Looper
-
-    val filterTestRespeck = IntentFilter(Constants.ACTION_RESPECK_LIVE_BROADCAST)
-    val filterTestThingy = IntentFilter(Constants.ACTION_THINGY_BROADCAST)
-    lateinit var respeckModel:RespeckModel
-    lateinit var respeckInputWindow:FloatBuffer
-    lateinit var respeckMovment:String
-    lateinit var thingyMovment:String
-    var respeckNeedUpdate:Boolean = false
-
-
-
-    var tabTitle = arrayOf("Respeck","Thingy","Both")
+//    lateinit var dataSet_res_accel_x: LineDataSet
+//    lateinit var dataSet_res_accel_y: LineDataSet
+//    lateinit var dataSet_res_accel_z: LineDataSet
+//
+//    lateinit var dataSet_thingy_accel_x: LineDataSet
+//    lateinit var dataSet_thingy_accel_y: LineDataSet
+//    lateinit var dataSet_thingy_accel_z: LineDataSet
+//
+//    var time = 0f
+//    lateinit var allRespeckData: LineData
+//
+//    lateinit var allThingyData: LineData
+//    lateinit var respeckChart: LineChart
+//    lateinit var thingyChart: LineChart
+//
+//    // global broadcast receiver so we can unregister it
+//    lateinit var respeckLiveUpdateReceiver: BroadcastReceiver
+//    lateinit var thingyLiveUpdateReceiver: BroadcastReceiver
+//    lateinit var looperRespeck: Looper
+//    lateinit var looperThingy: Looper
+//
+//    val filterTestRespeck = IntentFilter(Constants.ACTION_RESPECK_LIVE_BROADCAST)
+//    val filterTestThingy = IntentFilter(Constants.ACTION_THINGY_BROADCAST)
+//    lateinit var respeckModel:RespeckModel
+//    lateinit var respeckInputWindow:FloatBuffer
+//    lateinit var respeckMovment:String
+//    lateinit var thingyMovment:String
+//    var respeckNeedUpdate:Boolean = false
+    lateinit var respeckButtom:Button
+    lateinit var thingyButtom:Button
+    lateinit var bothButtom: Button
+    private var mLastClickTime: Long = 0
+    //
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_live_data)
 
-        var pager = findViewById<ViewPager2>(R.id.viewpager2)
-        var tab = findViewById<TabLayout>(R.id.tabLayout)
 
-        pager.adapter = FragmentAdapter(supportFragmentManager,lifecycle)
+        respeckButtom = findViewById(R.id.respeck_button)
+        thingyButtom = findViewById(R.id.thingy_button)
+        bothButtom = findViewById(R.id.both_button)
 
-        TabLayoutMediator(tab,pager){
-            tab,position ->
-                tab.text = tabTitle[position]
-        }.attach()
+        respeckButtom.setOnClickListener {
+            if (SystemClock.elapsedRealtime() - mLastClickTime < 1000){
+            }else{
+                val intent = Intent(this, RespeckActivity::class.java)
+                startActivity(intent)
+            }
+            mLastClickTime = SystemClock.elapsedRealtime()
 
+        }
 
+        thingyButtom.setOnClickListener {
+            if (SystemClock.elapsedRealtime() - mLastClickTime < 1000){
+            }else {
+                val intent = Intent(this, ThingyActivity::class.java)
+                startActivity(intent)
+            }
+            mLastClickTime = SystemClock.elapsedRealtime()
+        }
 
+        bothButtom.setOnClickListener {
+            if (SystemClock.elapsedRealtime() - mLastClickTime < 1000){
+            }else {
+                val intent = Intent(this, BothActivity::class.java)
+                startActivity(intent)
+            }
+            mLastClickTime = SystemClock.elapsedRealtime()
+        }
+        respeckButtom.isEnabled = false
+        thingyButtom.isEnabled = false
+        bothButtom.isEnabled = false
 
-
-
-
-//        respeckModel = RespeckModel.newInstance(this)
-//        var respeckCounter =0
-//        respeckMovment = resources.getStringArray(R.array.activity_follow_model_order)[13]
-//        respeckNeedUpdate = true
-//        respeckInputWindow = FloatBuffer.allocate(500);
-//        //used for testing
-//        //var testInput: ArrayList<Float> = arrayListOf<Float>(0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,1f);
-//        //var res:String = chooseBest(testInput);
-//        //updateText("Respeck",res);
-//        setupCharts()
+        startSpeckService()
         var bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.live
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
-            when (item.itemId){
-                R.id.connection ->{
+            when (item.itemId) {
+                R.id.connection -> {
                     val intent = Intent(this, MainConnectActivity::class.java)
                     startActivity(intent)
-                    overridePendingTransition(0,0)
+                    overridePendingTransition(0, 0)
                     true
                 }
-                R.id.live->{
+                R.id.live -> {
                     true
                 }
-                R.id.user->{
+                R.id.user -> {
                     val intent = Intent(this, UserActivity::class.java)
                     startActivity(intent)
-                    overridePendingTransition(0,0)
+                    overridePendingTransition(0, 0)
                     true
                 }
             }
             false
         }
-//        // set up the broadcast receiver
-//        respeckLiveUpdateReceiver = object : BroadcastReceiver() {
-//            override fun onReceive(context: Context, intent: Intent) {
-//
-//                Log.i("thread", "I am running on thread = " + Thread.currentThread().name)
-//
-//                val action = intent.action
-//
-//                if (action == Constants.ACTION_RESPECK_LIVE_BROADCAST) {
-//
-//                    val liveData =
-//                        intent.getSerializableExtra(Constants.RESPECK_LIVE_DATA) as RESpeckLiveData
-//                    Log.d("Live", "onReceive: liveData = " + liveData)
-//
-//                    // get all relevant intent contents
-//                    val accelX = liveData.accelX
-//                    val accelY = liveData.accelY
-//                    val accelZ = liveData.accelZ
-//                    var gyroX = liveData.gyro.x
-//                    var gyroY = liveData.gyro.y
-//                    var gyroZ = liveData.gyro.z
-//                    var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ)
-//                    respeckInputWindow.put(fA)
-//                    if(respeckCounter >= 50){
-//                        var rArray:FloatArray = respeckInputWindow.array().sliceArray(IntRange(0,299))
-//
-//                        println("size: aaa  "+rArray.size)
-//                        val input = TensorBuffer.createFixedSize(intArrayOf(1, 50, 6), DataType.FLOAT32)
-//                        input.loadArray(rArray)
-//                        val outputs = respeckModel.process(input)
-//                        val output = outputs.outputFeature0AsTensorBuffer.floatArray
-//                        var tempRespeckMovment = chooseBest(output)
-//                        runOnUiThread{
-//                            val textMessage:String = String.format(resources.getString(R.string.movement_text),"Respack",tempRespeckMovment)
-//                            respeck_text.text = textMessage}
-//                        respeckCounter = 0
-//                        respeckInputWindow.clear()
-//
-//                    }
-//                    respeckCounter+=1
-//
-//                    time += 1
-//                    updateGraph("respeck", accelX, accelY, accelZ)
-//
-//                }
-//            }
-//        }
-//
-//        // register receiver on another thread
-//        val handlerThreadRespeck = HandlerThread("bgThreadRespeckLive")
-//        handlerThreadRespeck.start()
-//        looperRespeck = handlerThreadRespeck.looper
-//        val handlerRespeck = Handler(looperRespeck)
-//        this.registerReceiver(respeckLiveUpdateReceiver, filterTestRespeck, null, handlerRespeck)
-//
-//        // set up the broadcast receiver
-//        thingyLiveUpdateReceiver = object : BroadcastReceiver() {
-//            override fun onReceive(context: Context, intent: Intent) {
-//
-//                Log.i("thread", "I am running on thread = " + Thread.currentThread().name)
-//
-//                val action = intent.action
-//
-//                if (action == Constants.ACTION_THINGY_BROADCAST) {
-//
-//                    val liveData =
-//                        intent.getSerializableExtra(Constants.THINGY_LIVE_DATA) as ThingyLiveData
-//                    Log.d("Live", "onReceive: liveData = " + liveData)
-//
-//                    // get all relevant intent contents
-//                    val x = liveData.accelX
-//                    val y = liveData.accelY
-//                    val z = liveData.accelZ
-//
-//                    time += 1
-//                    updateGraph("thingy", x, y, z)
-//
-//                }
-//            }
-//        }
-//
-//        // register receiver on another thread
-//        val handlerThreadThingy = HandlerThread("bgThreadThingyLive")
-//        handlerThreadThingy.start()
-//        looperThingy = handlerThreadThingy.looper
-//        val handlerThingy = Handler(looperThingy)
-//        this.registerReceiver(thingyLiveUpdateReceiver, filterTestThingy, null, handlerThingy)
-
-
     }
+    private fun startSpeckService() {
+        // TODO if it's not already running
+        val isServiceRunning = Utils.isServiceRunning(BluetoothSpeckService::class.java, applicationContext)
+        Log.i("service","isServiceRunning = " + isServiceRunning)
 
-//
-//    fun setupCharts() {
-//        respeckChart = findViewById(R.id.respeck_chart)
-//        thingyChart = findViewById(R.id.thingy_chart)
-//
-//        // Respeck
-//
-//        time = 0f
-//        val entries_res_accel_x = ArrayList<Entry>()
-//        val entries_res_accel_y = ArrayList<Entry>()
-//        val entries_res_accel_z = ArrayList<Entry>()
-//
-//        dataSet_res_accel_x = LineDataSet(entries_res_accel_x, "Accel X")
-//        dataSet_res_accel_y = LineDataSet(entries_res_accel_y, "Accel Y")
-//        dataSet_res_accel_z = LineDataSet(entries_res_accel_z, "Accel Z")
-//
-//        dataSet_res_accel_x.setDrawCircles(false)
-//        dataSet_res_accel_y.setDrawCircles(false)
-//        dataSet_res_accel_z.setDrawCircles(false)
-//
-//        dataSet_res_accel_x.setColor(
-//            ContextCompat.getColor(
-//                this,
-//                R.color.red
-//            )
-//        )
-//        dataSet_res_accel_y.setColor(
-//            ContextCompat.getColor(
-//                this,
-//                R.color.green
-//            )
-//        )
-//        dataSet_res_accel_z.setColor(
-//            ContextCompat.getColor(
-//                this,
-//                R.color.blue
-//            )
-//        )
-//
-//        val dataSetsRes = ArrayList<ILineDataSet>()
-//        dataSetsRes.add(dataSet_res_accel_x)
-//        dataSetsRes.add(dataSet_res_accel_y)
-//        dataSetsRes.add(dataSet_res_accel_z)
-//
-//        allRespeckData = LineData(dataSetsRes)
-//        respeckChart.data = allRespeckData
-//        respeckChart.invalidate()
-//
-//        // Thingy
-//
-//        time = 0f
-//        val entries_thingy_accel_x = ArrayList<Entry>()
-//        val entries_thingy_accel_y = ArrayList<Entry>()
-//        val entries_thingy_accel_z = ArrayList<Entry>()
-//
-//        dataSet_thingy_accel_x = LineDataSet(entries_thingy_accel_x, "Accel X")
-//        dataSet_thingy_accel_y = LineDataSet(entries_thingy_accel_y, "Accel Y")
-//        dataSet_thingy_accel_z = LineDataSet(entries_thingy_accel_z, "Accel Z")
-//
-//        dataSet_thingy_accel_x.setDrawCircles(false)
-//        dataSet_thingy_accel_y.setDrawCircles(false)
-//        dataSet_thingy_accel_z.setDrawCircles(false)
-//
-//        dataSet_thingy_accel_x.setColor(
-//            ContextCompat.getColor(
-//                this,
-//                R.color.red
-//            )
-//        )
-//        dataSet_thingy_accel_y.setColor(
-//            ContextCompat.getColor(
-//                this,
-//                R.color.green
-//            )
-//        )
-//        dataSet_thingy_accel_z.setColor(
-//            ContextCompat.getColor(
-//                this,
-//                R.color.blue
-//            )
-//        )
-//
-//        val dataSetsThingy = ArrayList<ILineDataSet>()
-//        dataSetsThingy.add(dataSet_thingy_accel_x)
-//        dataSetsThingy.add(dataSet_thingy_accel_y)
-//        dataSetsThingy.add(dataSet_thingy_accel_z)
-//
-//        allThingyData = LineData(dataSetsThingy)
-//        thingyChart.data = allThingyData
-//        thingyChart.invalidate()
-//    }
-//
-//    fun updateGraph(graph: String, x: Float, y: Float, z: Float) {
-//        // take the first element from the queue
-//        // and update the graph with it
-//        if (graph == "respeck") {
-//            dataSet_res_accel_x.addEntry(Entry(time, x))
-//            dataSet_res_accel_y.addEntry(Entry(time, y))
-//            dataSet_res_accel_z.addEntry(Entry(time, z))
-//
-//            runOnUiThread {
-//                allRespeckData.notifyDataChanged()
-//                respeckChart.notifyDataSetChanged()
-//                respeckChart.invalidate()
-//                respeckChart.setVisibleXRangeMaximum(150f)
-//                respeckChart.moveViewToX(respeckChart.lowestVisibleX + 40)
-//            }
-//        } else if (graph == "thingy") {
-//            dataSet_thingy_accel_x.addEntry(Entry(time, x))
-//            dataSet_thingy_accel_y.addEntry(Entry(time, y))
-//            dataSet_thingy_accel_z.addEntry(Entry(time, z))
-//
-//            runOnUiThread {
-//                allThingyData.notifyDataChanged()
-//                thingyChart.notifyDataSetChanged()
-//                thingyChart.invalidate()
-//                thingyChart.setVisibleXRangeMaximum(150f)
-//                thingyChart.moveViewToX(thingyChart.lowestVisibleX + 40)
-//            }
-//        }
-//    }
-//
-//    //do updateText("Respeck" or "Tringy", chooseBest(The result of model in array list of float))
-//    fun updateText(sensor:String, movement:String){
-//        val textMessage:String = String.format(resources.getString(R.string.movement_text),sensor,movement)
-//        if(sensor.equals(resources.getString(R.string.respeck_string))){
-//            respeck_text.text = textMessage;
-//        }else{
-//            thingy_text.text = textMessage;
-//        }
-//    }
-//
-//    fun chooseBest(arr: FloatArray):String{
-//
-//        var x = arr.indexOfFirst { it == arr.maxOrNull()!! }  // change name x to index
-//        return resources.getStringArray(R.array.activity_follow_model_order)[x];
-//    }
-//
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        respeckModel.close()
-//        unregisterReceiver(respeckLiveUpdateReceiver)
-//        unregisterReceiver(thingyLiveUpdateReceiver)
-//        looperRespeck.quit()
-//        looperThingy.quit()
-//    }
+        if (isServiceRunning){
+            Log.i("service", "Service already running, restart")
+            this.stopService(Intent(this, BluetoothSpeckService::class.java))
+            Toast.makeText(this, "Sensors start initialization", Toast.LENGTH_SHORT).show()
+            this.startService(Intent(this, BluetoothSpeckService::class.java))
+            while(!Utils.isServiceRunning(BluetoothSpeckService::class.java, applicationContext)){}
+            Toast.makeText(this, "Sensors finished initialization", Toast.LENGTH_SHORT).show()
+            respeckButtom.isEnabled = true
+            thingyButtom.isEnabled = true
+            bothButtom.isEnabled = true
+        }else{
+            Toast.makeText(this, "Please connect to a sensor first", Toast.LENGTH_SHORT).show()
+        }
+    }
 }

@@ -14,10 +14,10 @@ import java.nio.charset.StandardCharsets;
 public class CloudConnection{
     private static CloudConnection instance = null;
     public HttpURLConnection sensorDataConnection;
-    public HttpURLConnection hitoricalConnection;
+    public HttpURLConnection usrRequestConnection;
     public HttpURLConnection historicalConnection;
     private URL serverUrl;
-    private URL hisoticalUrl;
+    private URL userRequestUrl;
     private URL historicalUrl;
     public String classificationResult;
     private CloudConnection(){
@@ -41,7 +41,8 @@ public class CloudConnection{
         if(instance == null){
             instance = new CloudConnection();
         }
-        instance.hisoticalUrl = new URL(userRequestUrl);
+        instance.userRequestUrl = new URL(userRequestUrl);
+        System.out.println("setupuserdata success");
 
         assert instance != null;
         return instance;
@@ -165,25 +166,25 @@ public class CloudConnection{
     public String sendRegisterPostRequest(String username,String pwd) throws IOException {
         String usrRequestJson = Utils.toRegisterJson(username, pwd);
         System.out.println(usrRequestJson);
-        if (this.hitoricalConnection == null){
-            this.hitoricalConnection = (HttpURLConnection) this.hisoticalUrl.openConnection();
-            this.hitoricalConnection.setRequestMethod("POST");
-            this.hitoricalConnection.setRequestProperty("Content-Type", "application/json");
-            this.hitoricalConnection.setRequestProperty("Accept", "application/json");
-            this.hitoricalConnection.setDoOutput(true);
+        if (this.usrRequestConnection == null){
+            this.usrRequestConnection = (HttpURLConnection) this.userRequestUrl.openConnection();
+            this.usrRequestConnection.setRequestMethod("POST");
+            this.usrRequestConnection.setRequestProperty("Content-Type", "application/json");
+            this.usrRequestConnection.setRequestProperty("Accept", "application/json");
+            this.usrRequestConnection.setDoOutput(true);
         }
 
-        OutputStream os = this.hitoricalConnection.getOutputStream();
+        OutputStream os = this.usrRequestConnection.getOutputStream();
         byte[] input = usrRequestJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
         os.flush();
         os.close();
 
-        int responseCode = this.hitoricalConnection.getResponseCode();
+        int responseCode = this.usrRequestConnection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK){
             System.out.print(responseCode);
             BufferedReader br = new BufferedReader(
-                    new InputStreamReader(this.hitoricalConnection.getInputStream(), StandardCharsets.UTF_8));
+                    new InputStreamReader(this.usrRequestConnection.getInputStream(), StandardCharsets.UTF_8));
             StringBuilder response = new StringBuilder();
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
@@ -203,24 +204,24 @@ public class CloudConnection{
 
     public String sendLoginPostRequest(String username,String pwd) throws IOException {
         String usrRequestJson = Utils.toRegisterJson(username, pwd);
-        if (this.hitoricalConnection == null){
-            this.hitoricalConnection = (HttpURLConnection) this.hisoticalUrl.openConnection();
-            this.hitoricalConnection.setRequestMethod("POST");
-            this.hitoricalConnection.setRequestProperty("Content-Type", "application/json");
-            this.hitoricalConnection.setRequestProperty("Accept", "application/json");
-            this.hitoricalConnection.setDoOutput(true);
+        if (this.usrRequestConnection == null){
+            this.usrRequestConnection = (HttpURLConnection) this.userRequestUrl.openConnection();
+            this.usrRequestConnection.setRequestMethod("POST");
+            this.usrRequestConnection.setRequestProperty("Content-Type", "application/json");
+            this.usrRequestConnection.setRequestProperty("Accept", "application/json");
+            this.usrRequestConnection.setDoOutput(true);
         }
 
-        OutputStream os = this.hitoricalConnection.getOutputStream();
+        OutputStream os = this.usrRequestConnection.getOutputStream();
         byte[] input = usrRequestJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
         os.flush();
         os.close();
 
-        int responseCode = this.hitoricalConnection.getResponseCode();
+        int responseCode = this.usrRequestConnection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK){
             BufferedReader br = new BufferedReader(
-                    new InputStreamReader(this.hitoricalConnection.getInputStream(), StandardCharsets.UTF_8));
+                    new InputStreamReader(this.usrRequestConnection.getInputStream(), StandardCharsets.UTF_8));
             StringBuilder response = new StringBuilder();
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
@@ -238,24 +239,24 @@ public class CloudConnection{
 
     public String sendHistoricalPostRequest(String username) throws IOException{
         String usrRequestJson = Utils.toHistoricalJson(username);
-        if (this.hitoricalConnection == null){
-            this.hitoricalConnection = (HttpURLConnection) this.historicalUrl.openConnection();
-            this.hitoricalConnection.setRequestMethod("POST");
-            this.hitoricalConnection.setRequestProperty("Content-Type", "application/json");
-            this.hitoricalConnection.setRequestProperty("Accept", "application/json");
-            this.hitoricalConnection.setDoOutput(true);
+        if (this.historicalConnection == null){
+            this.historicalConnection = (HttpURLConnection) this.historicalUrl.openConnection();
+            this.historicalConnection.setRequestMethod("POST");
+            this.historicalConnection.setRequestProperty("Content-Type", "application/json");
+            this.historicalConnection.setRequestProperty("Accept", "application/json");
+            this.historicalConnection.setDoOutput(true);
         }
 
-        OutputStream os = this.hitoricalConnection.getOutputStream();
+        OutputStream os = this.historicalConnection.getOutputStream();
         byte[] input = usrRequestJson.getBytes(StandardCharsets.UTF_8);
         os.write(input, 0, input.length);
         os.flush();
         os.close();
 
-        int responseCode = this.hitoricalConnection.getResponseCode();
+        int responseCode = this.historicalConnection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK){
             BufferedReader br = new BufferedReader(
-                    new InputStreamReader(this.hitoricalConnection.getInputStream(), StandardCharsets.UTF_8));
+                    new InputStreamReader(this.historicalConnection.getInputStream(), StandardCharsets.UTF_8));
             StringBuilder response = new StringBuilder();
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
@@ -276,13 +277,13 @@ public class CloudConnection{
             this.sensorDataConnection.disconnect();
             this.sensorDataConnection = null;
         }
-        if(this.hitoricalConnection !=null){
-            this.hitoricalConnection.disconnect();
-            this.hitoricalConnection = null;
+        if(this.usrRequestConnection !=null){
+            this.usrRequestConnection.disconnect();
+            this.usrRequestConnection = null;
         }
-        if (this.hitoricalConnection != null){
+        if (this.historicalConnection != null){
             this.historicalConnection.disconnect();
-            this.hitoricalConnection = null;
+            this.historicalConnection = null;
         }
     }
 

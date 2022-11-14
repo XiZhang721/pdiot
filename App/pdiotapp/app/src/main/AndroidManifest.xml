@@ -19,19 +19,19 @@
     <uses-feature android:name="android.hardware.camera" />
 
     <application
+        android:name="androidx.multidex.MultiDexApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:name="androidx.multidex.MultiDexApplication"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
 
         <service
             android:name=".bluetooth.BluetoothSpeckService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity
             android:name=".live.LiveDataActivity"
@@ -74,19 +74,30 @@
                 <action android:name="com.specknet.respeckmodeltesting.RESPECK_BROADCAST" />
             </intent-filter>
         </service>
-
-        <activity android:name=".UserActivity"
+        <activity
+            android:name=".BothActivity"
             android:screenOrientation="portrait"/>
+        <activity
+            android:name=".RespeckActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ThingyActivity"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".UserActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".onboarding.OnBoardingActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".RecordingActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".MainConnectActivity"
+        <activity
+            android:name=".MainConnectActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".RegisterActivity"
-            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".RegisterActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait">
