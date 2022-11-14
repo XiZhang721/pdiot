@@ -30,20 +30,22 @@ import kotlinx.android.synthetic.main.fragment_on_boarding.view.*
 class UserActivity: AppCompatActivity() {
 
     lateinit var pieChart: PieChart
-    private val movements = listOf( "Sitting",
+    private val movements = listOf(
+        "Desk work",
+        "Walking at normal speed",
+        "Climbing stairs",
+        "Descending stairs",
+        "Sitting",
         "Sitting bent forward",
         "Sitting bent backward",
         "Standing",
-        "Lying down on back",
+        "Running",
         "Lying down left",
         "Lying down right",
+        "Lying down on back",
         "Lying down on stomach",
-        "Walking at normal speed",
-        "Running",
-        "Climbing stairs",
-        "Descending stairs",
-        "General Movement",
-        "Desk work")
+        "General Movement"
+    )
 //    private val testTime = listOf(0,0,10,0,0,100,0,0,40,500,20,200,0,0)
     private lateinit var actualHistoricalData:FloatArray;
     private lateinit var ccon: CloudConnection;
@@ -156,7 +158,22 @@ class UserActivity: AppCompatActivity() {
         }
 
         val dataSet = PieDataSet(entries,"Movements")
-        dataSet.setColors(Color.LTGRAY,Color.BLUE,Color.CYAN,Color.DKGRAY,Color.GREEN,Color.MAGENTA,Color.RED,Color.YELLOW)
+        dataSet.setColors(
+            resources.getColor(R.color.chart_color1),
+            resources.getColor(R.color.chart_color2),
+            resources.getColor(R.color.chart_color3),
+            resources.getColor(R.color.chart_color4),
+            resources.getColor(R.color.chart_color5),
+            resources.getColor(R.color.chart_color6),
+            resources.getColor(R.color.chart_color7),
+            resources.getColor(R.color.chart_color8),
+            resources.getColor(R.color.chart_color9),
+            resources.getColor(R.color.chart_color10),
+            resources.getColor(R.color.chart_color11),
+            resources.getColor(R.color.chart_color12),
+            resources.getColor(R.color.chart_color13),
+            resources.getColor(R.color.chart_color14)
+            )
         dataSet.sliceSpace = 0f
 
         dataSet.yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE

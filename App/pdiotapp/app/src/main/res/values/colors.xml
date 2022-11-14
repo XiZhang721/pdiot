@@ -56,4 +56,21 @@
     <color name="button_icon_bg">#D4D3CA</color>
     <color name="button_icon_light">#5C4F55</color>
     <color name="button_icon_dark">#B13B2E</color>
+
+    <color name="chart_color1">#DA4A35</color>
+    <color name="chart_color2">#E77F6C</color>
+    <color name="chart_color3">#F4B061</color>
+    <color name="chart_color4">#FBE651</color>
+    <color name="chart_color5">#94A84C</color>
+    <color name="chart_color6">#5AC263</color>
+    <color name="chart_color7">#98B6D2</color>
+    <color name="chart_color8">#2564AC</color>
+    <color name="chart_color9">#AF6E9E</color>
+    <color name="chart_color10">#E182A4</color>
+    <color name="chart_color11">#C3C6C8</color>
+    <color name="chart_color12">#A2BDAA</color>
+    <color name="chart_color13">#F2D5BC</color>
+    <color name="chart_color14">#9D7A67</color>
+
+
 </resources>
