@@ -47,14 +47,15 @@ class UserActivity: AppCompatActivity() {
         "General Movement"
     )
 //    private val testTime = listOf(0,0,10,0,0,100,0,0,40,500,20,200,0,0)
-    private lateinit var actualHistoricalData:FloatArray;
-    private lateinit var ccon: CloudConnection;
     private var hitoricalUrl: String =  "https://pdiot-c.ew.r.appspot.com/history"
+    private var stepUrl:String = "https://pdiot-c.ew.r.appspot.com/step"
     lateinit var logoutButton: Button
     lateinit var recordButton: Button
     lateinit var userName: TextView
     lateinit var sharedPreferences: SharedPreferences
     lateinit var username: String
+    lateinit var stepcount: TextView
+    var step = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,10 +67,9 @@ class UserActivity: AppCompatActivity() {
         userName = findViewById(R.id.username_text)
         var sharedPreferences =  getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         userName.text = sharedPreferences.getString(Constants.USERNAME_PREF,"")
-
         setupButtons()
         configChartView()
-
+        getStepCount()
         var bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.user
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
@@ -92,6 +92,22 @@ class UserActivity: AppCompatActivity() {
             }
             false
         }
+    }
+
+    private fun getStepCount() {
+        stepcount = findViewById(R.id.step_count_text)
+        step = 0
+        sharedPreferences = getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
+        username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
+        var stepCcon = CloudConnection.setUpStepConnection(stepUrl)
+        var response = "";
+        var thr = Thread(Runnable {
+            response = stepCcon.sendStepCountPostRequest(username)
+        })
+        thr.start()
+        thr.join()
+        stepCcon.disconnect()
+        stepcount.text = String.format(resources.getString(R.string.step_text),response)
     }
 
     private fun setupButtons() {
@@ -137,14 +153,13 @@ class UserActivity: AppCompatActivity() {
         pieChart.setDrawEntryLabels(false)
         sharedPreferences = getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
-        ccon = CloudConnection.setUpHistoricalConnection(hitoricalUrl)
+        var ccon = CloudConnection.setUpHistoricalConnection(hitoricalUrl)
         var response = "";
         var thr = Thread(Runnable {
             response = ccon.sendHistoricalPostRequest(username)
         })
         thr.start()
-        while (response == ""){}
-        thr.interrupt()
+        thr.join()
         ccon.disconnect()
         var gson:Gson = Gson()
         var historical = gson.fromJson(response,IntArray::class.java)
@@ -157,7 +172,7 @@ class UserActivity: AppCompatActivity() {
             }
         }
 
-        val dataSet = PieDataSet(entries,"Movements")
+        val dataSet = PieDataSet(entries,"")
         dataSet.setColors(
             resources.getColor(R.color.chart_color1),
             resources.getColor(R.color.chart_color2),

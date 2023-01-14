@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
+import android.view.KeyEvent
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
@@ -17,7 +18,6 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.google.android.gms.internal.zzhu
 import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
 import com.specknet.pdiotapp.cloudcomputing.CloudConnection
 import com.specknet.pdiotapp.live.LiveDataActivity
@@ -40,10 +40,8 @@ class RespeckActivity : AppCompatActivity() {
     lateinit var allRespeckData: LineData
     lateinit var respeckChart: LineChart
     private var predictUrl: String =  "https://pdiot-c.ew.r.appspot.com/inference"
-    private lateinit var ccon: CloudConnection
 
     val filterTestRespeck = IntentFilter(Constants.ACTION_RESPECK_LIVE_BROADCAST)
-    lateinit var respeckModel: RespeckModel
     lateinit var respeckInputWindow: FloatBuffer
     lateinit var respeckMovment:String
     lateinit var looperRespeck: Looper
@@ -53,7 +51,6 @@ class RespeckActivity : AppCompatActivity() {
 
     lateinit var respeckText: TextView
 
-    lateinit var thr: Thread
     lateinit var sharedPreferences: SharedPreferences
     lateinit var username: String
 
@@ -74,13 +71,12 @@ class RespeckActivity : AppCompatActivity() {
         sharedPreferences = this.getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
 
-        respeckModel = RespeckModel.newInstance(this)
         var respeckCounter =0
         respeckMovment = resources.getStringArray(R.array.activity_follow_model_order)[13]
 //        respeckNeedUpdate = true
         respeckInputWindow = FloatBuffer.allocate(500);
 
-        val textMessage:String = String.format(resources.getString(R.string.movement_text),"Respack","General Movement")
+        val textMessage:String = "Recognizing Action based on Respeck, please wait..."
         respeckText.text = textMessage
 
         // set up the broadcast receiver
@@ -114,15 +110,16 @@ class RespeckActivity : AppCompatActivity() {
                     }
                     if(dataReady){
                         var rArray:FloatArray = respeckInputWindow.array().sliceArray(IntRange(0,299))
-                        ccon = CloudConnection.setUpServerConnection(predictUrl);
+                        var ccon = CloudConnection.setUpServerConnection(predictUrl);
                         var response:String = ""
-                        thr = Thread(Runnable {
+                        var thr = Thread(Runnable {
                             //print(rArray)
+                            print(username)
+                            print(rArray)
                             response = ccon.sendRespeckDataPostRequest(username,rArray)
-                            Thread.sleep(500)
                         })
                         thr.start()
-                        while (response==""){}
+                        thr.join()
                         ccon.disconnect()
                         print("The action is"+response)
                         println("size: aaa  "+rArray.size)
@@ -131,9 +128,10 @@ class RespeckActivity : AppCompatActivity() {
 //                        val outputs = respeckModel.process(input)
 //                        val output = outputs.outputFeature0AsTensorBuffer.floatArray
 //                        var tempRespeckMovment = chooseBest(output)
-                        zzhu.runOnUiThread {
+                        runOnUiThread {
                             while (response == "") {
                             }
+                           
                             val textMessage: String = String.format(
                                 resources.getString(R.string.movement_text),
                                 "Respack",
@@ -163,11 +161,6 @@ class RespeckActivity : AppCompatActivity() {
 
         exitButton = findViewById(R.id.exit_button)
         exitButton.setOnClickListener {
-            unregisterReceiver(respeckLiveUpdateReceiver)
-            thr.interrupt()
-            ccon.disconnect()
-            respeckModel.close()
-            looperRespeck.quit()
             val intent = Intent(this, LiveDataActivity::class.java)
             startActivity(intent)
             finish()
@@ -176,7 +169,7 @@ class RespeckActivity : AppCompatActivity() {
 
 
     private fun updateRespeckData(liveData: RESpeckLiveData) {
-        zzhu.runOnUiThread {
+        runOnUiThread {
             respeckAccel.text =
                 getString(R.string.respeck_accel, liveData.accelX, liveData.accelY, liveData.accelZ)
             respeckGyro.text =
@@ -192,7 +185,7 @@ class RespeckActivity : AppCompatActivity() {
         dataSet_res_accel_y.addEntry(Entry(time, y))
         dataSet_res_accel_z.addEntry(Entry(time, z))
 
-        zzhu.runOnUiThread {
+        runOnUiThread {
             allRespeckData.notifyDataChanged()
             respeckChart.notifyDataSetChanged()
             respeckChart.invalidate()
@@ -247,7 +240,16 @@ class RespeckActivity : AppCompatActivity() {
         respeckChart.invalidate()
     }
 
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            return false
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(respeckLiveUpdateReceiver)
+        looperRespeck.quit()
     }
 }

@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
+import android.view.KeyEvent
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
@@ -17,7 +18,6 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.google.android.gms.internal.zzhu
 import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
 import com.specknet.pdiotapp.cloudcomputing.CloudConnection
 import com.specknet.pdiotapp.live.LiveDataActivity
@@ -40,10 +40,8 @@ class BothActivity : AppCompatActivity() {
     lateinit var allData: LineData
     lateinit var chart: LineChart
     private var predictUrl: String =  "https://pdiot-c.ew.r.appspot.com/inference"
-    private lateinit var ccon: CloudConnection
 
     val filterTestRespeck = IntentFilter(Constants.ACTION_RESPECK_LIVE_BROADCAST)
-    lateinit var respeckModel: RespeckModel
     lateinit var respeckInputWindow: FloatBuffer
     lateinit var respeckMovment:String
     lateinit var looperRespeck: Looper
@@ -53,7 +51,6 @@ class BothActivity : AppCompatActivity() {
 
     lateinit var bothText: TextView
 
-    lateinit var thr: Thread
     lateinit var sharedPreferences: SharedPreferences
     lateinit var username: String
     //    var respeckNeedUpdate:Boolean = false
@@ -79,7 +76,8 @@ class BothActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_both)
-
+        var isRespeckOn = false
+        var isThingyOn = false
         respeckAccel = findViewById(R.id.both_respeck_accel)
         respeckGyro = findViewById(R.id.both_respeck_gyro)
         thingyAccel = findViewById(R.id.both_thingy_accel)
@@ -97,7 +95,7 @@ class BothActivity : AppCompatActivity() {
         respeckInputWindow = FloatBuffer.allocate(500);
         thingyInputWindow = FloatBuffer.allocate(500)
         var thingyCounter = 0
-        var textMessage:String = String.format(resources.getString(R.string.movement_both_text),"General Movement")
+        var textMessage:String = "Recognizing Action based on both Respeck and Thingy, please wait..."
         bothText.text = textMessage
 
         // set up the broadcast receiver
@@ -109,6 +107,7 @@ class BothActivity : AppCompatActivity() {
                 val action = intent.action
 
                 if (action == Constants.ACTION_RESPECK_LIVE_BROADCAST) {
+                    isRespeckOn = true
 
                     val liveData =
                         intent.getSerializableExtra(Constants.RESPECK_LIVE_DATA) as RESpeckLiveData
@@ -122,7 +121,7 @@ class BothActivity : AppCompatActivity() {
                     var gyroY = liveData.gyro.y
                     var gyroZ = liveData.gyro.z
                     var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ)
-                    if(!respeckReady){
+                    if(!respeckReady && isRespeckOn && isThingyOn){
                         respeckInputWindow.put(fA)
                         respeckCounter+=1
                         if(respeckCounter >= 50){
@@ -133,18 +132,18 @@ class BothActivity : AppCompatActivity() {
                         //merge two input windows and send, copy and paste on the thingy part.
                         var rArray:FloatArray = respeckInputWindow.array().sliceArray(IntRange(0,299))
                         var tArray:FloatArray = thingyInputWindow.array().sliceArray(IntRange(0,449))
-                        ccon = CloudConnection.setUpServerConnection(predictUrl);
+                        var ccon = CloudConnection.setUpServerConnection(predictUrl);
                         var response:String = ""
-                        thr = Thread(Runnable {
+                        var thr = Thread(Runnable {
                             print(rArray)
                             response = ccon.sendTwoSensorDataPostRequest(username,rArray,tArray)
-                            Thread.sleep(500)
                         })
                         thr.start()
+                        thr.join()
                         ccon.disconnect()
                         print("The action is"+response)
                         println("size: aaa  "+rArray.size)
-                        zzhu.runOnUiThread {
+                        runOnUiThread {
                             while (response == "") {}
                             val textMessage: String = String.format(
                                 resources.getString(R.string.movement_both_text),
@@ -182,7 +181,7 @@ class BothActivity : AppCompatActivity() {
                 val action = intent.action
 
                 if (action == Constants.ACTION_THINGY_BROADCAST) {
-
+                    isThingyOn = true
                     val liveData =
                         intent.getSerializableExtra(Constants.THINGY_LIVE_DATA) as ThingyLiveData
                     Log.d("Live", "onReceive: liveData = " + liveData)
@@ -198,7 +197,7 @@ class BothActivity : AppCompatActivity() {
                     val magY = liveData.mag.y
                     val magZ = liveData.mag.z
                     var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ,magX,magY,magZ)
-                    if(!thingyReady){
+                    if(!thingyReady&& isRespeckOn && isThingyOn){
                         thingyInputWindow.put(fA)
                         thingyCounter += 1
                         if(thingyCounter >= 50){
@@ -229,7 +228,7 @@ class BothActivity : AppCompatActivity() {
 
 
     private fun updateRespeckData(liveData: RESpeckLiveData) {
-        zzhu.runOnUiThread {
+        runOnUiThread {
             respeckAccel.text =
                 getString(R.string.both_respeck_accel, liveData.accelX, liveData.accelY, liveData.accelZ)
             respeckGyro.text =
@@ -243,7 +242,7 @@ class BothActivity : AppCompatActivity() {
         dataSet_res_accel_y.addEntry(Entry(time, y))
         dataSet_res_accel_z.addEntry(Entry(time, z))
 
-        zzhu.runOnUiThread {
+        runOnUiThread {
             allData.notifyDataChanged()
             chart.notifyDataSetChanged()
             chart.invalidate()
@@ -257,7 +256,7 @@ class BothActivity : AppCompatActivity() {
         dataSet_thingy_accel_y.addEntry(Entry(time, y))
         dataSet_thingy_accel_z.addEntry(Entry(time, z))
 
-        zzhu.runOnUiThread {
+        runOnUiThread {
             allData.notifyDataChanged()
             chart.notifyDataSetChanged()
             chart.invalidate()
@@ -268,7 +267,7 @@ class BothActivity : AppCompatActivity() {
 
     private fun updateThingyData(liveData: ThingyLiveData) {
         // update UI thread
-        zzhu.runOnUiThread {
+        runOnUiThread {
             thingyAccel.text =
                 getString(R.string.both_thingy_accel, liveData.accelX, liveData.accelY, liveData.accelZ)
             thingyGyro.text =
@@ -359,13 +358,17 @@ class BothActivity : AppCompatActivity() {
         chart.invalidate()
     }
 
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            return false
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(respeckLiveUpdateReceiver)
         unregisterReceiver(thingyLiveUpdateReceiver)
-        thr.interrupt()
-        ccon.disconnect()
-        respeckModel.close()
         looperThingy.quit()
         looperRespeck.quit()
     }

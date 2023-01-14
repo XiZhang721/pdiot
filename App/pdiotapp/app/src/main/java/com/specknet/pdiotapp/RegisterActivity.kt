@@ -27,7 +27,6 @@ class RegisterActivity: AppCompatActivity(){
     private var hintShowing: Boolean = false
     private var timer: Timer = Timer()
     private var registerUrl: String =  "https://pdiot-c.ew.r.appspot.com/register"
-    private lateinit var ccon: CloudConnection
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -123,15 +122,14 @@ class RegisterActivity: AppCompatActivity(){
         }
         try {
 
-            ccon =  CloudConnection.setUpUserDataConnection(registerUrl)
+            var ccon =  CloudConnection.setUpUserDataConnection(registerUrl)
             var response:String = "";
             var thr = Thread(Runnable{
                 response = ccon.sendRegisterPostRequest(username, password)
 
             })
             thr.start()
-            while (response == ""){}
-            thr.interrupt()
+            thr.join()
             ccon.disconnect()
 
             if (response == "1") {

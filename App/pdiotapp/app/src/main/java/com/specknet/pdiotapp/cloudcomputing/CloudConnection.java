@@ -16,9 +16,11 @@ public class CloudConnection{
     public HttpURLConnection sensorDataConnection;
     public HttpURLConnection usrRequestConnection;
     public HttpURLConnection historicalConnection;
+    public HttpURLConnection stepConnection;
     private URL serverUrl;
     private URL userRequestUrl;
     private URL historicalUrl;
+    private URL stepUrl;
     public String classificationResult;
     private CloudConnection(){
         try {
@@ -53,6 +55,16 @@ public class CloudConnection{
             instance = new CloudConnection();
         }
         instance.historicalUrl = new URL(historicalUrl);
+
+        assert instance != null;
+        return instance;
+    }
+
+    public static CloudConnection setUpStepConnection(String stepUrl) throws MalformedURLException{
+        if (instance == null){
+            instance = new CloudConnection();
+        }
+        instance.stepUrl = new URL(stepUrl);
 
         assert instance != null;
         return instance;
@@ -96,6 +108,7 @@ public class CloudConnection{
 
     public String sendRespeckDataPostRequest(String username, float[] respeckWindow) throws IOException{
         String dataJson = Utils.respeckWindowToJson(username,respeckWindow);
+        System.out.println(dataJson);
         if(this.sensorDataConnection==null){
             this.sensorDataConnection = (HttpURLConnection)this.serverUrl.openConnection();
             this.sensorDataConnection.setRequestMethod("POST");
@@ -111,6 +124,7 @@ public class CloudConnection{
         os.close();
 
         int responseCode = this.sensorDataConnection.getResponseCode();
+        System.out.println(responseCode);
         if (responseCode == HttpURLConnection.HTTP_OK){
             BufferedReader br = new BufferedReader(
                     new InputStreamReader(this.sensorDataConnection.getInputStream(), StandardCharsets.UTF_8));
@@ -237,6 +251,40 @@ public class CloudConnection{
         }
     }
 
+    public String sendStepCountPostRequest(String username) throws IOException{
+        String usrRequestJson = Utils.toStepJson(username);
+        System.out.println(usrRequestJson);
+        if (this.stepConnection == null){
+            this.stepConnection = (HttpURLConnection) this.stepUrl.openConnection();
+            this.stepConnection.setRequestMethod("POST");
+            this.stepConnection.setRequestProperty("Content-Type", "application/json");
+            this.stepConnection.setRequestProperty("Accept", "application/json");
+            this.stepConnection.setDoOutput(true);
+        }
+        OutputStream os = this.stepConnection.getOutputStream();
+        byte[] input = usrRequestJson.getBytes(StandardCharsets.UTF_8);
+        os.write(input, 0, input.length);
+        os.flush();
+        os.close();
+        int responseCode = this.stepConnection.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK){
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(this.stepConnection.getInputStream(), StandardCharsets.UTF_8));
+            StringBuilder response = new StringBuilder();
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            System.out.println(response);
+            br.close();
+            return response.toString();
+        }else{
+            Exception e = new Exception("The POST request for register account is failed.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public String sendHistoricalPostRequest(String username) throws IOException{
         String usrRequestJson = Utils.toHistoricalJson(username);
         if (this.historicalConnection == null){
@@ -284,6 +332,10 @@ public class CloudConnection{
         if (this.historicalConnection != null){
             this.historicalConnection.disconnect();
             this.historicalConnection = null;
+        }
+        if (this.stepConnection != null){
+            this.stepConnection.disconnect();
+            this.stepConnection = null;
         }
     }
 

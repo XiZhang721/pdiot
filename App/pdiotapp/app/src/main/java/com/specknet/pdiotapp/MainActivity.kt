@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity() {
     // permissions
     lateinit var permissionAlertDialog: AlertDialog.Builder
     private var loginUrl: String =  "https://pdiot-c.ew.r.appspot.com/login"
-    private lateinit var ccon: CloudConnection
 
     val permissionsForRequest = arrayListOf<String>()
 
@@ -170,15 +169,14 @@ class MainActivity : AppCompatActivity() {
         }
         try {
 
-            ccon =  CloudConnection.setUpUserDataConnection(loginUrl)
+            var ccon =  CloudConnection.setUpUserDataConnection(loginUrl)
             var response:String = "";
             var thr=Thread(Runnable{
                 response = ccon.sendLoginPostRequest(username, password)
 
             })
             thr.start()
-            while (response == ""){}
-            thr.interrupt()
+            thr.join()
             ccon.disconnect()
             if (response == "1") {
                 return true
