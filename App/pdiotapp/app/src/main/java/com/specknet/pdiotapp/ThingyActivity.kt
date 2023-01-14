@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
+import android.view.KeyEvent
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
@@ -17,7 +18,6 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.google.android.gms.internal.zzhu
 import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
 import com.specknet.pdiotapp.cloudcomputing.CloudConnection
 import com.specknet.pdiotapp.live.LiveDataActivity
@@ -35,7 +35,6 @@ class ThingyActivity : AppCompatActivity() {
     lateinit var allThingyData: LineData
     lateinit var thingyChart: LineChart
     private var predictUrl: String =  "https://pdiot-c.ew.r.appspot.com/inference"
-    private lateinit var ccon: CloudConnection
     // global broadcast receiver so we can unregister it
     lateinit var thingyLiveUpdateReceiver: BroadcastReceiver
     lateinit var looperThingy: Looper
@@ -46,7 +45,6 @@ class ThingyActivity : AppCompatActivity() {
     lateinit var thingyGyro: TextView
     lateinit var thingyMag: TextView
     lateinit var thingyText: TextView
-    lateinit var thr: Thread
     lateinit var sharedPreferences: SharedPreferences
     lateinit var username: String
     var dataReady = false
@@ -66,7 +64,7 @@ class ThingyActivity : AppCompatActivity() {
         setupChart()
         sharedPreferences = this.getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
-        val textMessage:String = String.format(resources.getString(R.string.movement_text),"Thingy","General Movement")
+        val textMessage:String = "Recognizing Action based on Thingy, please wait..."
         thingyText.text = textMessage
         thingyInputWindow = FloatBuffer.allocate(500)
         var thingyCounter = 0
@@ -105,20 +103,17 @@ class ThingyActivity : AppCompatActivity() {
                     if(dataReady){
 
                         var rArray:FloatArray = thingyInputWindow.array().sliceArray(IntRange(0,449))
-                        ccon = CloudConnection.setUpServerConnection(predictUrl);
+                        var ccon = CloudConnection.setUpServerConnection(predictUrl);
                         var response:String = ""
-                        thr = Thread(Runnable {
+                        var thr = Thread(Runnable {
                             print(rArray)
                             response = ccon.sendThingyDataPostRequest(username,rArray)
-                            Thread.sleep(500)
                         })
                         thr.start()
-                        while (response==""){}
+                        thr.join()
                         ccon.disconnect()
                         print("The action is"+response)
-                        zzhu.runOnUiThread {
-                            while (response == "") {
-                            }
+                        runOnUiThread {
                             val textMessage: String = String.format(
                                 resources.getString(R.string.movement_text),
                                 "Thingy",
@@ -146,10 +141,6 @@ class ThingyActivity : AppCompatActivity() {
 
         exitButton = findViewById(R.id.exit_button)
         exitButton.setOnClickListener {
-            unregisterReceiver(thingyLiveUpdateReceiver)
-            thr.interrupt()
-            ccon.disconnect()
-            looperThingy.quit()
             val intent = Intent(this, LiveDataActivity::class.java)
             startActivity(intent)
             finish()
@@ -161,7 +152,7 @@ class ThingyActivity : AppCompatActivity() {
         dataSet_thingy_accel_y.addEntry(Entry(time, y))
         dataSet_thingy_accel_z.addEntry(Entry(time, z))
 
-        zzhu.runOnUiThread {
+        runOnUiThread {
             allThingyData.notifyDataChanged()
             thingyChart.notifyDataSetChanged()
             thingyChart.invalidate()
@@ -172,7 +163,7 @@ class ThingyActivity : AppCompatActivity() {
 
     private fun updateThingyData(liveData: ThingyLiveData) {
         // update UI thread
-        zzhu.runOnUiThread {
+        runOnUiThread {
             thingyAccel.text =
                 getString(R.string.thingy_accel, liveData.accelX, liveData.accelY, liveData.accelZ)
             thingyGyro.text =
@@ -227,7 +218,16 @@ class ThingyActivity : AppCompatActivity() {
         thingyChart.invalidate()
     }
 
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            return false
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(thingyLiveUpdateReceiver)
+        looperThingy.quit()
     }
 }

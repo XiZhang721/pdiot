@@ -179,6 +179,7 @@ public class Utils {
         return gson.toJson(dataWindowWithThingy);
     }
 
+
     public static class UserRequest{
         String requestType;
         User user;
@@ -210,4 +211,12 @@ public class Utils {
         user.put("username",username);
         return gson.toJson(user);
     }
+
+    public static String toStepJson(String username) {
+        Gson gson = new Gson();
+        Map<String,String> user = new HashMap<>();
+        user.put("username",username);
+        return gson.toJson(user);
+    }
+
 }

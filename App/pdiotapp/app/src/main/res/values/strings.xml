@@ -71,4 +71,5 @@
     <string name="register_username">The given username already exists.</string>
     <string name="register_password">The two passwords do not match.</string>
     <string name="register_success">Successfully registered!</string>
+    <string name="step_text">"Step count: %1$s"</string>
 </resources>

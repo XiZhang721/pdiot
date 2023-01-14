@@ -73,7 +73,7 @@ class ExampleUnitTest {
         var f1= FloatArray(300){_ -> 1f};
 
         var f2 = FloatArray(450){_ -> 2f}
-        var serverRequestUrl = "https://pdiot-c.ew.r.appspot.com/test"
+        var serverRequestUrl = "https://pdiot-c.ew.r.appspot.com/inference"
         var ccon = CloudConnection.setUpServerConnection(serverRequestUrl)
         ccon.sendTwoSensorDataPostRequest("d",f1,f2)
     }
@@ -110,11 +110,25 @@ class ExampleUnitTest {
         var r = ccon.sendHistoricalPostRequest(f1);
         var gson:Gson = Gson();
         var rr = gson.fromJson(r, FloatArray::class.java)
-        for (i in 0..rr.size-1){
+        for (i in 0..rr.size-1) {
             print(rr[i])
         }
     }
 
+    @Test
+    fun sendStepRequest(){
+        var f1:String = "d"
+        var stepUrl = "https://pdiot-c.ew.r.appspot.com/step"
+        var ccon = CloudConnection.setUpStepConnection(stepUrl)
+        var r = ccon.sendStepCountPostRequest(f1);
+        print(r)
+        println("***********************************")
+//        var gson:Gson = Gson();
+//        var rr = gson.fromJson(r, FloatArray::class.java)
+//        for (i in 0..rr.size-1){
+//            print(rr[i])
+
+    }
 
 
 
