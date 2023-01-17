@@ -53,7 +53,7 @@ class BothActivity : AppCompatActivity() {
 
     lateinit var sharedPreferences: SharedPreferences
     lateinit var username: String
-    //    var respeckNeedUpdate:Boolean = false
+
     // global graph variables
     lateinit var dataSet_thingy_accel_x: LineDataSet
     lateinit var dataSet_thingy_accel_y: LineDataSet
@@ -78,6 +78,8 @@ class BothActivity : AppCompatActivity() {
         setContentView(R.layout.activity_both)
         var isRespeckOn = false
         var isThingyOn = false
+
+        // Set test views
         respeckAccel = findViewById(R.id.both_respeck_accel)
         respeckGyro = findViewById(R.id.both_respeck_gyro)
         thingyAccel = findViewById(R.id.both_thingy_accel)
@@ -85,13 +87,14 @@ class BothActivity : AppCompatActivity() {
         thingyMag = findViewById(R.id.both_thingy_mag)
         bothText = findViewById(R.id.both_text)
         chart = findViewById(R.id.both_chart)
+
+        // Gets the username from shared preference
         sharedPreferences = getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
 
         setupChart()
         var respeckCounter =0
         respeckMovment = resources.getStringArray(R.array.activity_follow_model_order)[13]
-//        respeckNeedUpdate = true
         respeckInputWindow = FloatBuffer.allocate(500);
         thingyInputWindow = FloatBuffer.allocate(500)
         var thingyCounter = 0
@@ -113,6 +116,7 @@ class BothActivity : AppCompatActivity() {
                         intent.getSerializableExtra(Constants.RESPECK_LIVE_DATA) as RESpeckLiveData
                     Log.d("Live", "onReceive: liveData = " + liveData)
                     updateRespeckData(liveData)
+
                     // get all relevant intent contents
                     val accelX = liveData.accelX
                     val accelY = liveData.accelY
@@ -121,6 +125,8 @@ class BothActivity : AppCompatActivity() {
                     var gyroY = liveData.gyro.y
                     var gyroZ = liveData.gyro.z
                     var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ)
+
+                    // Add the respeck data to input window
                     if(!respeckReady && isRespeckOn && isThingyOn){
                         respeckInputWindow.put(fA)
                         respeckCounter+=1
@@ -128,6 +134,8 @@ class BothActivity : AppCompatActivity() {
                             respeckReady = true
                         }
                     }
+
+                    // if both thingy and respeck has 50 data, then send to the server for prediction
                     if(respeckReady && thingyReady){
                         //merge two input windows and send, copy and paste on the thingy part.
                         var rArray:FloatArray = respeckInputWindow.array().sliceArray(IntRange(0,299))
@@ -141,8 +149,8 @@ class BothActivity : AppCompatActivity() {
                         thr.start()
                         thr.join()
                         ccon.disconnect()
-                        print("The action is"+response)
-                        println("size: aaa  "+rArray.size)
+
+                        // Update the prediction text
                         runOnUiThread {
                             while (response == "") {}
                             val textMessage: String = String.format(
@@ -151,6 +159,8 @@ class BothActivity : AppCompatActivity() {
                             )
                             bothText.text = textMessage
                         }
+
+                        // Clear the windows
                         respeckCounter = 0
                         thingyCounter = 0
                         respeckInputWindow.clear()
@@ -160,8 +170,6 @@ class BothActivity : AppCompatActivity() {
                     }
                     time += 0.5f
                     updateRespeckGraph(accelX, accelY, accelZ)
-
-
                 }
             }
         }
@@ -197,6 +205,8 @@ class BothActivity : AppCompatActivity() {
                     val magY = liveData.mag.y
                     val magZ = liveData.mag.z
                     var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ,magX,magY,magZ)
+
+                    // Add the thingy data to input window
                     if(!thingyReady&& isRespeckOn && isThingyOn){
                         thingyInputWindow.put(fA)
                         thingyCounter += 1
@@ -218,6 +228,7 @@ class BothActivity : AppCompatActivity() {
         val handlerThingy = Handler(looperThingy)
         registerReceiver(thingyLiveUpdateReceiver, filterTestThingy, null, handlerThingy)
 
+        // Set the exit buttom
         exitButton = findViewById(R.id.exit_button)
         exitButton.setOnClickListener {
             val intent = Intent(this, LiveDataActivity::class.java)
@@ -226,7 +237,9 @@ class BothActivity : AppCompatActivity() {
         }
     }
 
-
+    /**
+     * This function updates the respeck data text.
+     */
     private fun updateRespeckData(liveData: RESpeckLiveData) {
         runOnUiThread {
             respeckAccel.text =
@@ -235,6 +248,10 @@ class BothActivity : AppCompatActivity() {
                 getString(R.string.both_respeck_gyro, liveData.gyro.x, liveData.gyro.y, liveData.gyro.z)
         }
     }
+
+    /**
+     * This function updates the respeck data graph.
+     */
     fun updateRespeckGraph(x: Float, y: Float, z: Float) {
         // take the first element from the queue
         // and update the graph with it
@@ -251,6 +268,9 @@ class BothActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function updates the thingy data graph.
+     */
     private fun updateThingyGraph(x: Float, y: Float, z: Float) {
         dataSet_thingy_accel_x.addEntry(Entry(time, x))
         dataSet_thingy_accel_y.addEntry(Entry(time, y))
@@ -265,6 +285,9 @@ class BothActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function updates the thingy data text.
+     */
     private fun updateThingyData(liveData: ThingyLiveData) {
         // update UI thread
         runOnUiThread {
@@ -277,6 +300,9 @@ class BothActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function sets up the chart for live data of both respeck and thingy.
+     */
     private fun setupChart() {
 
         // Respeck
@@ -358,6 +384,9 @@ class BothActivity : AppCompatActivity() {
         chart.invalidate()
     }
 
+    /**
+     * This function disables the back key
+     */
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if(keyCode == KeyEvent.KEYCODE_BACK){
             return false

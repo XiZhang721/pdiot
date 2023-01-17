@@ -40,20 +40,27 @@ class RegisterActivity: AppCompatActivity(){
         loginButton = findViewById(R.id.login_page_loader)
         hintText = findViewById(R.id.register_hint)
         hintText.text = ""
+
+        // Sets the inputted passwords to be shown as *
         password1.transformationMethod = PasswordTransformationMethod.getInstance()
         password2.transformationMethod = PasswordTransformationMethod.getInstance()
 
         setupClickListeners()
-
-
     }
+
+    /**
+     * This function sets up the click listeners for register button and login button (which goes back to the login page)
+     */
     private fun setupClickListeners() {
         registerButton.setOnClickListener {
+            // Checks if the two given passwords are the same
             var isPasswordMatching: Boolean = password1.text.toString() == password2.text.toString()
             if (!isPasswordMatching) {
                 hintTimeCount(1)
             } else {
                 var isRegisterSuccess: Boolean = registerCheck(usernameInput.text.toString(), password1.text.toString())
+
+                // hint text will be shown based on different results
                 if (isRegisterSuccess) {
                     showHint(0)
                 } else {
@@ -64,12 +71,17 @@ class RegisterActivity: AppCompatActivity(){
             password1.text.clear()
             password2.text.clear()
         }
+
         loginButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
 
     }
+
+    /**
+     * This function displays hint text in different situations.
+     */
     private fun showHint(hint_type: Int) {
         when (hint_type){
             0-> {
@@ -85,13 +97,15 @@ class RegisterActivity: AppCompatActivity(){
                 hintText.setTextColor(Color.parseColor("#FF0000"))
             }
             else->{
-            throw IllegalArgumentException("Invalid hint type for registration.")
+                throw IllegalArgumentException("Invalid hint type for registration.")
             }
         }
-
         hintShowing = true
     }
 
+    /**
+    This function sets time out for the hint so that the hint disappears after time out.
+     */
     private fun hintTimeCount(hint_type: Int){
         var hideTask: TimerTask = object : TimerTask(){
             override fun run() {
@@ -114,14 +128,17 @@ class RegisterActivity: AppCompatActivity(){
 
     }
 
+    /**
+     * This function checks if the registration success.
+     */
     private fun registerCheck(username: String, password: String):Boolean{
-        print(username)
-        print(password)
+        // Check both username and password are not empty
         if(username.isEmpty() || password.isEmpty()){
             return false
         }
-        try {
 
+        // Register into the server
+        try {
             var ccon =  CloudConnection.setUpUserDataConnection(registerUrl)
             var response:String = "";
             var thr = Thread(Runnable{
@@ -140,7 +157,6 @@ class RegisterActivity: AppCompatActivity(){
             e.printStackTrace()
         }
         return false
-
-
     }
+
 }

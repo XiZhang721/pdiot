@@ -38,7 +38,6 @@ class RecyclerAdapter(var mContext: Context, var respeckOn: Boolean, var thingyO
     private var buttonTextReConn = "Re-Connect"
     private var images = intArrayOf(R.drawable.respeck_image,R.drawable.thingy_image)
 
-
     inner class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView) {
         var itemImage: ImageView
         var itemTitle: TextView
@@ -63,6 +62,8 @@ class RecyclerAdapter(var mContext: Context, var respeckOn: Boolean, var thingyO
 
         holder.itemTitle.text = titles[position]
         holder.itemImage.setImageResource(images[position])
+
+        // Get the connection state and sets the card based on the connection state
         var isOn:Boolean = if(position == 0) {
             respeckOn
         }else {
@@ -78,6 +79,7 @@ class RecyclerAdapter(var mContext: Context, var respeckOn: Boolean, var thingyO
             holder.connButton.setText(buttonTextConn)
         }
 
+        // Set the button for opening the detailed connection page
         holder.connButton.setOnClickListener {
             val intent = Intent(mContext, ConnectingActivity::class.java)
             mContext.startActivity(intent)

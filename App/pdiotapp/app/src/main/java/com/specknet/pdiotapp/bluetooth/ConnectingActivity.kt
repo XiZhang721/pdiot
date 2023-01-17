@@ -35,13 +35,11 @@ class ConnectingActivity : AppCompatActivity() {
     private lateinit var respeckID: EditText
     private lateinit var connectSensorsButton: Button
     private lateinit var restartConnectionButton: Button
-//    private lateinit var disconnectRespeckButton: Button
+
     private lateinit var disconnectButton: Button
     // Thingy
-//    private lateinit var scanThingyButton: Button
+
     private lateinit var thingyID: EditText
-//    private lateinit var connectThingyButton: Button
-//    private lateinit var disconnectThingyButton: Button
 
     lateinit var sharedPreferences: SharedPreferences
 

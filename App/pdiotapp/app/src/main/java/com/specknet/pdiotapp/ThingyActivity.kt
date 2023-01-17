@@ -62,12 +62,17 @@ class ThingyActivity : AppCompatActivity() {
         thingyText = findViewById(R.id.thingy_text)
 
         setupChart()
+
+        // Gets the username from shared preference
         sharedPreferences = this.getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
+
         val textMessage:String = "Recognizing Action based on Thingy, please wait..."
         thingyText.text = textMessage
         thingyInputWindow = FloatBuffer.allocate(500)
         var thingyCounter = 0
+
+        // set up the broadcast receiver
         thingyLiveUpdateReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
 
@@ -81,6 +86,7 @@ class ThingyActivity : AppCompatActivity() {
                         intent.getSerializableExtra(Constants.THINGY_LIVE_DATA) as ThingyLiveData
                     Log.d("Live", "onReceive: liveData = " + liveData)
                     updateThingyData(liveData)
+
                     // get all relevant intent contents
                     val accelX = liveData.accelX
                     val accelY = liveData.accelY
@@ -92,6 +98,8 @@ class ThingyActivity : AppCompatActivity() {
                     val magY = liveData.mag.y
                     val magZ = liveData.mag.z
                     var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ,magX,magY,magZ)
+
+                    // Add the thingy data to input window
                     if(!dataReady){
                         thingyInputWindow.put(fA)
                         thingyCounter += 1
@@ -100,8 +108,8 @@ class ThingyActivity : AppCompatActivity() {
                         }
                     }
 
+                    // if thingy has 50 data, then send to the server for prediction
                     if(dataReady){
-
                         var rArray:FloatArray = thingyInputWindow.array().sliceArray(IntRange(0,449))
                         var ccon = CloudConnection.setUpServerConnection(predictUrl);
                         var response:String = ""
@@ -112,7 +120,8 @@ class ThingyActivity : AppCompatActivity() {
                         thr.start()
                         thr.join()
                         ccon.disconnect()
-                        print("The action is"+response)
+
+                        // Update the prediction text
                         runOnUiThread {
                             val textMessage: String = String.format(
                                 resources.getString(R.string.movement_text),
@@ -121,6 +130,8 @@ class ThingyActivity : AppCompatActivity() {
                             )
                             thingyText.text = textMessage
                         }
+
+                        // Clear the windows
                         thingyCounter = 0
                         thingyInputWindow.clear()
                         dataReady = false
@@ -139,6 +150,7 @@ class ThingyActivity : AppCompatActivity() {
         val handlerThingy = Handler(looperThingy)
         registerReceiver(thingyLiveUpdateReceiver, filterTestThingy, null, handlerThingy)
 
+        // Set up the exit button
         exitButton = findViewById(R.id.exit_button)
         exitButton.setOnClickListener {
             val intent = Intent(this, LiveDataActivity::class.java)
@@ -147,6 +159,9 @@ class ThingyActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function updates the thingy data graph.
+     */
     private fun updateGraph(x: Float, y: Float, z: Float) {
         dataSet_thingy_accel_x.addEntry(Entry(time, x))
         dataSet_thingy_accel_y.addEntry(Entry(time, y))
@@ -161,6 +176,9 @@ class ThingyActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function updates the thingy data texts.
+     */
     private fun updateThingyData(liveData: ThingyLiveData) {
         // update UI thread
         runOnUiThread {
@@ -173,6 +191,9 @@ class ThingyActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function sets up the chart for live data of thingy.
+     */
     private fun setupChart() {
         // Thingy
 
@@ -218,6 +239,9 @@ class ThingyActivity : AppCompatActivity() {
         thingyChart.invalidate()
     }
 
+    /**
+     * This function disables the back key
+     */
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if(keyCode == KeyEvent.KEYCODE_BACK){
             return false

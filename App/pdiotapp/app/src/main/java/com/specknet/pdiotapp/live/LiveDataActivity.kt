@@ -15,50 +15,21 @@ import com.specknet.pdiotapp.utils.Utils
 
 class LiveDataActivity : AppCompatActivity() {
 
-    // global graph variables
-//    lateinit var dataSet_res_accel_x: LineDataSet
-//    lateinit var dataSet_res_accel_y: LineDataSet
-//    lateinit var dataSet_res_accel_z: LineDataSet
-//
-//    lateinit var dataSet_thingy_accel_x: LineDataSet
-//    lateinit var dataSet_thingy_accel_y: LineDataSet
-//    lateinit var dataSet_thingy_accel_z: LineDataSet
-//
-//    var time = 0f
-//    lateinit var allRespeckData: LineData
-//
-//    lateinit var allThingyData: LineData
-//    lateinit var respeckChart: LineChart
-//    lateinit var thingyChart: LineChart
-//
-//    // global broadcast receiver so we can unregister it
-//    lateinit var respeckLiveUpdateReceiver: BroadcastReceiver
-//    lateinit var thingyLiveUpdateReceiver: BroadcastReceiver
-//    lateinit var looperRespeck: Looper
-//    lateinit var looperThingy: Looper
-//
-//    val filterTestRespeck = IntentFilter(Constants.ACTION_RESPECK_LIVE_BROADCAST)
-//    val filterTestThingy = IntentFilter(Constants.ACTION_THINGY_BROADCAST)
-//    lateinit var respeckModel:RespeckModel
-//    lateinit var respeckInputWindow:FloatBuffer
-//    lateinit var respeckMovment:String
-//    lateinit var thingyMovment:String
-//    var respeckNeedUpdate:Boolean = false
-    lateinit var respeckButtom:Button
-    lateinit var thingyButtom:Button
-    lateinit var bothButtom: Button
+    lateinit var respeckButton:Button
+    lateinit var thingyButton:Button
+    lateinit var bothButton: Button
     private var mLastClickTime: Long = 0
-    //
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_live_data)
 
+        // Set the three buttons
+        respeckButton = findViewById(R.id.respeck_button)
+        thingyButton = findViewById(R.id.thingy_button)
+        bothButton = findViewById(R.id.both_button)
 
-        respeckButtom = findViewById(R.id.respeck_button)
-        thingyButtom = findViewById(R.id.thingy_button)
-        bothButtom = findViewById(R.id.both_button)
-
-        respeckButtom.setOnClickListener {
+        respeckButton.setOnClickListener {
             if (SystemClock.elapsedRealtime() - mLastClickTime < 1000){
             }else{
                 val intent = Intent(this, RespeckActivity::class.java)
@@ -68,7 +39,7 @@ class LiveDataActivity : AppCompatActivity() {
 
         }
 
-        thingyButtom.setOnClickListener {
+        thingyButton.setOnClickListener {
             if (SystemClock.elapsedRealtime() - mLastClickTime < 1000){
             }else {
                 val intent = Intent(this, ThingyActivity::class.java)
@@ -77,7 +48,7 @@ class LiveDataActivity : AppCompatActivity() {
             mLastClickTime = SystemClock.elapsedRealtime()
         }
 
-        bothButtom.setOnClickListener {
+        bothButton.setOnClickListener {
             if (SystemClock.elapsedRealtime() - mLastClickTime < 1000){
             }else {
                 val intent = Intent(this, BothActivity::class.java)
@@ -85,11 +56,15 @@ class LiveDataActivity : AppCompatActivity() {
             }
             mLastClickTime = SystemClock.elapsedRealtime()
         }
-        respeckButtom.isEnabled = false
-        thingyButtom.isEnabled = false
-        bothButtom.isEnabled = false
+
+        // The three buttons will be set to disabled, and then enable them when sensors finish reconnecting
+        respeckButton.isEnabled = false
+        thingyButton.isEnabled = false
+        bothButton.isEnabled = false
 
         startSpeckService()
+
+        // Set the bottom navigator
         var bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.live
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
@@ -113,6 +88,11 @@ class LiveDataActivity : AppCompatActivity() {
             false
         }
     }
+
+    /**
+        This function is used for re-connecting sensors. Message will be displayed to the user
+        for sensors' initialization.
+     */
     private fun startSpeckService() {
         // TODO if it's not already running
         val isServiceRunning = Utils.isServiceRunning(BluetoothSpeckService::class.java, applicationContext)
@@ -125,9 +105,9 @@ class LiveDataActivity : AppCompatActivity() {
             this.startService(Intent(this, BluetoothSpeckService::class.java))
             while(!Utils.isServiceRunning(BluetoothSpeckService::class.java, applicationContext)){}
             Toast.makeText(this, "Sensors finished initialization", Toast.LENGTH_SHORT).show()
-            respeckButtom.isEnabled = true
-            thingyButtom.isEnabled = true
-            bothButtom.isEnabled = true
+            respeckButton.isEnabled = true
+            thingyButton.isEnabled = true
+            bothButton.isEnabled = true
         }else{
             Toast.makeText(this, "Please connect to a sensor first", Toast.LENGTH_SHORT).show()
         }

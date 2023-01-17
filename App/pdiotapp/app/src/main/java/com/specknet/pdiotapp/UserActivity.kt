@@ -30,6 +30,9 @@ import kotlinx.android.synthetic.main.fragment_on_boarding.view.*
 class UserActivity: AppCompatActivity() {
 
     lateinit var pieChart: PieChart
+    /*
+        This movement list is in the order of the list stored in the server
+     */
     private val movements = listOf(
         "Desk work",
         "Walking at normal speed",
@@ -46,7 +49,7 @@ class UserActivity: AppCompatActivity() {
         "Lying down on stomach",
         "General Movement"
     )
-//    private val testTime = listOf(0,0,10,0,0,100,0,0,40,500,20,200,0,0)
+
     private var hitoricalUrl: String =  "https://pdiot-c.ew.r.appspot.com/history"
     private var stepUrl:String = "https://pdiot-c.ew.r.appspot.com/step"
     lateinit var logoutButton: Button
@@ -65,11 +68,16 @@ class UserActivity: AppCompatActivity() {
         recordButton = findViewById(R.id.record_button)
 
         userName = findViewById(R.id.username_text)
+
+        // Gets the username from shared preference
         var sharedPreferences =  getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         userName.text = sharedPreferences.getString(Constants.USERNAME_PREF,"")
+
         setupButtons()
         configChartView()
         getStepCount()
+
+        // Sets the bottom navigator
         var bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.user
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
@@ -94,6 +102,9 @@ class UserActivity: AppCompatActivity() {
         }
     }
 
+    /**
+     * This function gets the step count from the server and update the text.
+     */
     private fun getStepCount() {
         stepcount = findViewById(R.id.step_count_text)
         step = 0
@@ -110,6 +121,9 @@ class UserActivity: AppCompatActivity() {
         stepcount.text = String.format(resources.getString(R.string.step_text),response)
     }
 
+    /**
+     * This function sets up the record button and the logout button
+     */
     private fun setupButtons() {
         recordButton.setOnClickListener {
             val intent = Intent(this, RecordingActivity::class.java)
@@ -119,12 +133,17 @@ class UserActivity: AppCompatActivity() {
         logoutButton.setOnClickListener {
             stopSpeckService()
             val intent = Intent(this, MainActivity::class.java)
+
+            // Add flags to clear historical activity
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent)
         }
     }
 
+    /**
+     * This function disconnects all sensors.
+     */
     private fun stopSpeckService(){
         val isServiceRunning = Utils.isServiceRunning(BluetoothSpeckService::class.java, applicationContext)
         if(isServiceRunning){
@@ -132,7 +151,11 @@ class UserActivity: AppCompatActivity() {
         }
     }
 
+    /**
+     * This function gets historical data from the server and create pie chart based on the historical data
+     */
     private fun configChartView() {
+        // Pie chart settings
         pieChart = findViewById(R.id.history_chart)
         pieChart.setUsePercentValues(false)
         pieChart.description.isEnabled = true
@@ -151,8 +174,12 @@ class UserActivity: AppCompatActivity() {
         pieChart.animateY(1400, Easing.EaseInOutQuad)
         pieChart.legend.isEnabled = true
         pieChart.setDrawEntryLabels(false)
+
+        // Get the user name from the shared preference
         sharedPreferences = getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
+
+        // Get the historical data from the server
         var ccon = CloudConnection.setUpHistoricalConnection(hitoricalUrl)
         var response = "";
         var thr = Thread(Runnable {
@@ -164,6 +191,7 @@ class UserActivity: AppCompatActivity() {
         var gson:Gson = Gson()
         var historical = gson.fromJson(response,IntArray::class.java)
 
+        // Add the data to entries
         val entries: ArrayList<PieEntry> = ArrayList()
         for(i in historical.indices){
             if(historical.elementAt(i)>0){
@@ -172,6 +200,7 @@ class UserActivity: AppCompatActivity() {
             }
         }
 
+        // Sets up the pie chart
         val dataSet = PieDataSet(entries,"")
         dataSet.setColors(
             resources.getColor(R.color.chart_color1),
@@ -190,11 +219,9 @@ class UserActivity: AppCompatActivity() {
             resources.getColor(R.color.chart_color14)
             )
         dataSet.sliceSpace = 0f
-
         dataSet.yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
         dataSet.valueLinePart1Length = 1.25f
         val data = PieData(dataSet)
-
         data.setValueTextSize(13f)
         data.setValueTypeface(Typeface.DEFAULT_BOLD)
         data.setValueTextColor(Color.BLACK)
@@ -204,6 +231,5 @@ class UserActivity: AppCompatActivity() {
         pieChart.highlightValues(null)
         pieChart.invalidate()
     }
-
 
 }

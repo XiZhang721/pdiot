@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private var hintShowing: Boolean = false
     private var timer: Timer = Timer()
     lateinit var hintText: TextView
+
     // permissions
     lateinit var permissionAlertDialog: AlertDialog.Builder
     private var loginUrl: String =  "https://pdiot-c.ew.r.appspot.com/login"
@@ -85,15 +86,14 @@ class MainActivity : AppCompatActivity() {
             usernameInput.setText(sharedPreferences.getString(Constants.USERNAME_PREF,""))
         }
         hintText.text = ""
+
+        // Sets the inputted password to be shown as *
         passwordInput.transformationMethod = PasswordTransformationMethod.getInstance()
 
         permissionAlertDialog = AlertDialog.Builder(this)
 
         setupClickListeners()
-
         setupPermissions()
-
-        //setupBluetoothService()
 
         // register a broadcast receiver for respeck status
         filter.addAction(Constants.ACTION_RESPECK_CONNECTED)
@@ -101,6 +101,9 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    /**
+        This function disables the back key.
+     */
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if(keyCode == KeyEvent.KEYCODE_BACK){
             return false
@@ -108,7 +111,9 @@ class MainActivity : AppCompatActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
-    @SuppressLint("CommitPrefEdits")
+    /**
+        This function set up the login button and the register button
+     */
     private fun setupClickListeners() {
         loginButton.setOnClickListener {
             var usernameText = usernameInput.text.toString()
@@ -130,6 +135,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
+
+    /**
+        This function shows the hint if login failed.
+     */
     private fun showHint() {
         if(hintShowing){
             return
@@ -138,6 +147,9 @@ class MainActivity : AppCompatActivity() {
         hintShowing = true
     }
 
+    /**
+        This function sets time out for the hint so that the hint disappears after time out.
+     */
     private fun hintTimeCount(){
         var hideTask: TimerTask = object : TimerTask(){
             override fun run() {
@@ -161,12 +173,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+        This function checks the username and password for login.
+     */
     private fun loginCheck(username: String, password: String):Boolean{
         print(username)
         print(password)
+
+        // Checking both username and password are not empty
         if(username.isEmpty() || password.isEmpty()){
             return false
         }
+
+        // Check if the given username and password is in the server
         try {
 
             var ccon =  CloudConnection.setUpUserDataConnection(loginUrl)
@@ -188,6 +207,9 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
+    /**
+        This function sets up the app's premissions.
+     */
     private fun setupPermissions() {
         // request permissions
 
@@ -241,29 +263,6 @@ class MainActivity : AppCompatActivity() {
                 Constants.REQUEST_CODE_PERMISSIONS)
         }
 
-    }
-
-    private fun setupBluetoothService() {
-        val isServiceRunning = Utils.isServiceRunning(BluetoothSpeckService::class.java, applicationContext)
-        Log.i("debug","isServiceRunning = " + isServiceRunning)
-
-        // check sharedPreferences for an existing Respeck id
-        val sharedPreferences = getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
-        if (sharedPreferences.contains(Constants.RESPECK_MAC_ADDRESS_PREF)) {
-            Log.i("sharedpref", "Already saw a respeckID, starting service and attempting to reconnect")
-
-            // launch service to reconnect
-            // start the bluetooth service if it's not already running
-            if(!isServiceRunning) {
-                Log.i("service", "Starting BLT service")
-                val simpleIntent = Intent(this, BluetoothSpeckService::class.java)
-                this.startService(simpleIntent)
-            }
-        }
-        else {
-            Log.i("sharedpref", "No Respeck seen before, must pair first")
-            // TODO then start the service from the connection activity
-        }
     }
 
     override fun onDestroy() {

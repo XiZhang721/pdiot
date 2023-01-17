@@ -68,12 +68,13 @@ class RespeckActivity : AppCompatActivity() {
         respeckChart = findViewById(R.id.respeck_chart)
 
         setupChart()
+
+        // Gets the username from shared preference
         sharedPreferences = this.getSharedPreferences(Constants.PREFERENCES_FILE, Context.MODE_PRIVATE)
         username = sharedPreferences.getString(Constants.USERNAME_PREF,"").toString()
 
         var respeckCounter =0
         respeckMovment = resources.getStringArray(R.array.activity_follow_model_order)[13]
-//        respeckNeedUpdate = true
         respeckInputWindow = FloatBuffer.allocate(500);
 
         val textMessage:String = "Recognizing Action based on Respeck, please wait..."
@@ -93,6 +94,7 @@ class RespeckActivity : AppCompatActivity() {
                         intent.getSerializableExtra(Constants.RESPECK_LIVE_DATA) as RESpeckLiveData
                     Log.d("Live", "onReceive: liveData = " + liveData)
                     updateRespeckData(liveData)
+
                     // get all relevant intent contents
                     val accelX = liveData.accelX
                     val accelY = liveData.accelY
@@ -101,6 +103,8 @@ class RespeckActivity : AppCompatActivity() {
                     var gyroY = liveData.gyro.y
                     var gyroZ = liveData.gyro.z
                     var fA = floatArrayOf(accelX,accelY,accelZ,gyroX,gyroY,gyroZ)
+
+                    // Add the respeck data to input window
                     if(!dataReady){
                         respeckInputWindow.put(fA)
                         respeckCounter += 1
@@ -108,26 +112,20 @@ class RespeckActivity : AppCompatActivity() {
                             dataReady = true
                         }
                     }
+
+                    // if respeck has 50 data, then send to the server for prediction
                     if(dataReady){
                         var rArray:FloatArray = respeckInputWindow.array().sliceArray(IntRange(0,299))
                         var ccon = CloudConnection.setUpServerConnection(predictUrl);
                         var response:String = ""
                         var thr = Thread(Runnable {
-                            //print(rArray)
-                            print(username)
-                            print(rArray)
                             response = ccon.sendRespeckDataPostRequest(username,rArray)
                         })
                         thr.start()
                         thr.join()
                         ccon.disconnect()
-                        print("The action is"+response)
-                        println("size: aaa  "+rArray.size)
-//                        val input = TensorBuffer.createFixedSize(intArrayOf(1, 50, 6), DataType.FLOAT32)
-//                        input.loadArray(rArray)
-//                        val outputs = respeckModel.process(input)
-//                        val output = outputs.outputFeature0AsTensorBuffer.floatArray
-//                        var tempRespeckMovment = chooseBest(output)
+
+                        // Update the prediction text
                         runOnUiThread {
                             while (response == "") {
                             }
@@ -139,6 +137,8 @@ class RespeckActivity : AppCompatActivity() {
                             )
                             respeckText.text = textMessage
                         }
+
+                        // Clear the window
                         respeckCounter = 0
                         respeckInputWindow.clear()
                         dataReady = false
@@ -159,6 +159,7 @@ class RespeckActivity : AppCompatActivity() {
         val handlerRespeck = Handler(looperRespeck)
         registerReceiver(respeckLiveUpdateReceiver, filterTestRespeck, null, handlerRespeck)
 
+        // Set up the exit button
         exitButton = findViewById(R.id.exit_button)
         exitButton.setOnClickListener {
             val intent = Intent(this, LiveDataActivity::class.java)
@@ -167,7 +168,9 @@ class RespeckActivity : AppCompatActivity() {
         }
     }
 
-
+    /**
+     * This function updates the respeck data text.
+     */
     private fun updateRespeckData(liveData: RESpeckLiveData) {
         runOnUiThread {
             respeckAccel.text =
@@ -177,7 +180,9 @@ class RespeckActivity : AppCompatActivity() {
         }
     }
 
-
+    /**
+     * This function updates the respeck data graph.
+     */
     fun updateGraph(x: Float, y: Float, z: Float) {
         // take the first element from the queue
         // and update the graph with it
@@ -194,10 +199,12 @@ class RespeckActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function sets up the chart for live data of respeck.
+     */
     fun setupChart() {
 
         // Respeck
-
         time = 0f
         val entries_res_accel_x = ArrayList<Entry>()
         val entries_res_accel_y = ArrayList<Entry>()
@@ -240,6 +247,9 @@ class RespeckActivity : AppCompatActivity() {
         respeckChart.invalidate()
     }
 
+    /**
+     * This function disables the back key
+     */
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if(keyCode == KeyEvent.KEYCODE_BACK){
             return false

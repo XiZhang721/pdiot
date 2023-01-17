@@ -43,14 +43,14 @@ class MainConnectActivity: AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_connect_main)
 
-
+        // Sets the cards of Respeck and Thingy
         layoutManager = LinearLayoutManager(this)
         recycleView.layoutManager = layoutManager
         adapter = RecyclerAdapter(this,respeckOn ,thingyOn)
         recycleView.adapter = adapter
         var mainContext: Context = this
         
-
+        // Update the connection state of respeck
         respeckReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val action = intent.action
@@ -62,12 +62,15 @@ class MainConnectActivity: AppCompatActivity(){
                 }
             }
         }
+
+        // register receiver on another thread
         val handlerThreadRespeck = HandlerThread("bgThreadRespeckLive")
         handlerThreadRespeck.start()
         val looperRespeck = handlerThreadRespeck.looper
         val handlerRespeck = Handler(looperRespeck)
         this.registerReceiver(respeckReceiver, filterTestRespeck, null, handlerRespeck)
 
+        // Update the connection state of thingy
         thingyReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val action = intent.action
@@ -79,14 +82,15 @@ class MainConnectActivity: AppCompatActivity(){
                 }
             }
         }
+
+        // register receiver on another thread
         val handlerThreadThingy = HandlerThread("bgThreadThingyLive")
         handlerThreadThingy.start()
         var looperThingy = handlerThreadThingy.looper
         val handlerThingy = Handler(looperThingy)
         this.registerReceiver(thingyReceiver, filterTestThingy, null, handlerThingy)
 
-
-
+        // Sets the bottom navigator
         var bottomNavigationView: BottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.selectedItemId = R.id.connection
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
@@ -109,6 +113,7 @@ class MainConnectActivity: AppCompatActivity(){
             }
             false
         }
+
         refreshButton = findViewById(R.id.refresh_button)
         addButton = findViewById(R.id.add_button)
         hintText = findViewById(R.id.hintText)
@@ -116,6 +121,10 @@ class MainConnectActivity: AppCompatActivity(){
         setupClickListeners()
 
     }
+
+    /**
+        This function set up click listeners for the refresh button and add button.
+     */
     private fun setupClickListeners() {
         refreshButton.setOnClickListener {
             thingyOn = false
@@ -128,7 +137,9 @@ class MainConnectActivity: AppCompatActivity(){
         }
     }
 
-
+    /**
+     * This function shows the hint text.
+     */
     private fun showHint() {
         if(hintShowing){
             return
@@ -137,6 +148,9 @@ class MainConnectActivity: AppCompatActivity(){
         hintShowing = true
     }
 
+    /**
+     * This function removes the hint text when timeout is reached.
+     */
     private fun hintTimeCount(){
         var hideTask: TimerTask = object : TimerTask(){
             override fun run() {
