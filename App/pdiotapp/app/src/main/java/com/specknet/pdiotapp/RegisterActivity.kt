@@ -7,14 +7,9 @@ import android.text.method.PasswordTransformationMethod
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.specknet.pdiotapp.MainConnectActivity
-import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.cloudcomputing.CloudConnection
-import com.specknet.pdiotapp.utils.Utils
 import java.lang.IllegalArgumentException
-import java.net.HttpURLConnection
 import java.util.*
 
 class RegisterActivity: AppCompatActivity(){

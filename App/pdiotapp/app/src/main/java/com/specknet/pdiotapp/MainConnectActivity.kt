@@ -1,6 +1,5 @@
 package com.specknet.pdiotapp
 
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -8,7 +7,6 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
-import android.view.KeyEvent
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -18,7 +16,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.specknet.pdiotapp.live.LiveDataActivity
 import com.specknet.pdiotapp.utils.Constants
 import kotlinx.android.synthetic.main.activity_connect_main.*
-import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
 class MainConnectActivity: AppCompatActivity(){

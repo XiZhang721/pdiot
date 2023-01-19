@@ -123,6 +123,13 @@ public class Utils {
         return new float[]{accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, mag_x, mag_y, mag_z};
     }
 
+    /**
+     * Convert data window to JSON when both sensors are connected
+     * @param username the name of the user
+     * @param respeckDataWindow the data window recorded by the respeck
+     * @param thingy_dataWindow the data windwo recorded by the thingy
+     * @return the json form of data window for both sensors
+     */
     public static String twoSensorWindowToJSON(String username, float[] respeckDataWindow, float[] thingy_dataWindow){
         assert respeckDataWindow != null && thingy_dataWindow != null;
         String device1,device2;
@@ -150,7 +157,12 @@ public class Utils {
     }
 
 
-
+    /**
+     * Convert data window to Json when only respeck is needed for classification
+     * @param username the name of the user
+     * @param respeckWindow a float array of data window for respeck
+     * @return the json form of respeck data window
+     */
     public static String respeckWindowToJson(String username, float[] respeckWindow) {
         assert respeckWindow != null;
         String device;
@@ -165,6 +177,12 @@ public class Utils {
         return gson.toJson(dataWindowWithRespeck);
     }
 
+    /**
+     * Convert data window to Json when only thingy is needed for classification
+     * @param username the name of the user
+     * @param thingyWindow a float array of data window for thingy
+     * @return the json form of the thingy data window
+     */
     public static String thingyWindowToJson(String username, float[] thingyWindow) {
         assert thingyWindow != null;
         String device;
@@ -180,31 +198,36 @@ public class Utils {
     }
 
 
-    public static class UserRequest{
-        String requestType;
-        User user;
-        public UserRequest(String requestType, User user){
-            this.requestType = requestType;
-            this.user = user;
-        }
 
-    }
+    /**
+     * Convert the user data to json for registration
+     * @param username the name of the user
+     * @param pwd the password of the user
+     * @return the json of the user for registration request
+     */
     public static String toRegisterJson(String username, String pwd) {
         User user = new User(username, pwd);
-        String type = Constants.REGISTER_ACCOUNT;
-        UserRequest registerRequest = new UserRequest(type, user);
         Gson gson = new Gson();
         return gson.toJson(user);
     }
 
+    /**
+     * Convert the user data to json for login
+     * @param username the name of the user
+     * @param pwd the password of the user
+     * @return the json of the user for login request
+     */
     public static String toLoginJson(String username,String pwd){
         User user = new User(username, pwd);
-        String type = Constants.LOGIN_ACCOUNT;
-        UserRequest loginRequest = new UserRequest(type,user);
         Gson gson = new Gson();
         return gson.toJson(user);
     }
 
+    /**
+     * Covert the user name to json for sending historical data request
+     * @param username the name of the user
+     * @return the json form of the username
+     */
     public static String toHistoricalJson(String username){
         Gson gson = new Gson();
         Map<String,String> user = new HashMap<>();
@@ -212,6 +235,11 @@ public class Utils {
         return gson.toJson(user);
     }
 
+    /**
+     * Convert the user name to json for sending step count data request
+     * @param username the name of the user
+     * @return the json form of the usename
+     */
     public static String toStepJson(String username) {
         Gson gson = new Gson();
         Map<String,String> user = new HashMap<>();

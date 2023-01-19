@@ -8,24 +8,19 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
-import com.specknet.pdiotapp.bluetooth.BluetoothSpeckService
 import com.specknet.pdiotapp.cloudcomputing.CloudConnection
 import com.specknet.pdiotapp.live.LiveDataActivity
-import com.specknet.pdiotapp.ml.RespeckModel
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.RESpeckLiveData
 import com.specknet.pdiotapp.utils.ThingyLiveData
-import com.specknet.pdiotapp.utils.Utils
 import java.nio.FloatBuffer
 
 class BothActivity : AppCompatActivity() {

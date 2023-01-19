@@ -3,7 +3,6 @@ package com.specknet.pdiotapp
 import com.google.gson.Gson
 import com.specknet.pdiotapp.cloudcomputing.CloudConnection
 import com.specknet.pdiotapp.utils.Utils
-import okhttp3.internal.Util
 import org.junit.Assert.*
 import org.junit.Test
 

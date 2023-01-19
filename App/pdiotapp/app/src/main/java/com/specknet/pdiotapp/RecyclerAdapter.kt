@@ -1,34 +1,17 @@
 package com.specknet.pdiotapp
 
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Color
-import android.os.Handler
-import android.os.HandlerThread
-import android.provider.Settings.Global.getString
-import android.util.Log
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 
 import androidx.recyclerview.widget.RecyclerView
-import com.specknet.pdiotapp.R
 import com.specknet.pdiotapp.bluetooth.ConnectingActivity
-import com.specknet.pdiotapp.utils.Constants
-import com.specknet.pdiotapp.utils.RESpeckLiveData
-import com.specknet.pdiotapp.utils.ThingyLiveData
-import java.lang.Math.round
-import kotlin.math.roundToInt
 
 class RecyclerAdapter(var mContext: Context, var respeckOn: Boolean, var thingyOn: Boolean): RecyclerView.Adapter<RecyclerAdapter.ViewHolder>() {
     private var titles = arrayOf("Respeck","Thingy")

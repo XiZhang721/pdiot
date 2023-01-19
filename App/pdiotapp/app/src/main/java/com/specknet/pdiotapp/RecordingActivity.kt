@@ -12,8 +12,6 @@ import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.specknet.pdiotapp.live.LiveDataActivity
 import com.specknet.pdiotapp.utils.Constants
 import com.specknet.pdiotapp.utils.CountUpTimer
 import com.specknet.pdiotapp.utils.RESpeckLiveData
